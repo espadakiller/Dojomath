@@ -3,7 +3,6 @@ import "./globals.css";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import MouseGlow from "@/components/MouseGlow";
 
 export const metadata: Metadata = {
   title: "DojoMath | Cours de mathématiques en ligne",
@@ -18,17 +17,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body className="bg-slate-950 text-white antialiased">
-        {/* Effet souris */}
-        <MouseGlow />
-
-        {/* Navigation */}
+      <body>
+        
         <Navbar />
-
-        {/* Contenu des pages */}
         <main className="relative z-10">{children}</main>
-
-        {/* Footer */}
         <Footer />
       </body>
     </html>

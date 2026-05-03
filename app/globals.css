@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-/* Reset simple */
 * {
   box-sizing: border-box;
 }
@@ -11,31 +10,59 @@ html {
 
 body {
   overflow-x: hidden;
+  margin: 0;
+  background: #f5f5f7;
+  color: #1d1d1f;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Text",
+    "SF Pro Display",
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
 }
 
-/* Sélection texte */
+h1,
+h2,
+h3,
+.logo-font {
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Display",
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+}
+
 ::selection {
-  background: #38bdf8;
-  color: #020617;
+  background: #5f1414;
+  color: white;
 }
 
-/* Effet glass (utilisé partout) */
 .glass {
-  background: rgba(15, 23, 42, 0.72);
-  backdrop-filter: blur(18px);
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(255, 255, 255, 0.76);
+  backdrop-filter: blur(22px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-/* Grille légère en fond */
-.background-grid {
-  background-image:
-    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-  background-size: 48px 48px;
+.clean-bg,
+.premium-gradient {
+  background: #f5f5f7;
 }
 
-/* Effet bruit léger */
-.noise {
-  background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px);
-  background-size: 18px 18px;
+.text-gradient {
+  background: linear-gradient(135deg, #1d1d1f, #6f1d1b);
+  -webkit-background-clip: text;
+  color: transparent;
 }
+
+.red-glow {
+  box-shadow: 0 24px 80px rgba(111, 29, 27, 0.12);
+}
+
+.blue-glow {
+  box-shadow: none;
+}
+

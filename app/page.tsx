@@ -23,7 +23,7 @@ export default function HomePage() {
       <Hero />
 
       {/* Stats */}
-      <section className="px-5 py-16">
+      <section className="px-5 py-28">
         <AnimatedSection>
           <StatsStrip />
         </AnimatedSection>

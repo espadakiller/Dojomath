@@ -1,58 +1,56 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 
 export default function Hero() {
   return (
-    <section className="relative z-10 min-h-screen overflow-hidden px-5 pt-36">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,#0ea5e944,transparent_35%),radial-gradient(circle_at_bottom_right,#8b5cf644,transparent_35%)]" />
-
-      <div className="mx-auto grid max-w-7xl items-center gap-16 md:grid-cols-2">
+    <section className="relative z-10 overflow-hidden bg-[#f5f5f7] px-6 pt-32 pb-24">
+      <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.95fr_1.05fr]">
         <div>
           <motion.p
-            className="mb-4 inline-block rounded-full border border-sky-400/40 px-4 py-2 text-sm text-sky-300"
-            initial={{ opacity: 0, y: 24 }}
+            className="mb-6 text-sm font-medium text-[#6f1d1b]"
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
           >
             Cours de mathématiques en ligne
           </motion.p>
 
           <motion.h1
-            className="text-5xl font-black leading-tight md:text-7xl"
-            initial={{ opacity: 0, y: 32 }}
+            className="max-w-3xl text-5xl font-semibold leading-[1.02] tracking-[-0.055em] text-[#1d1d1f] sm:text-6xl lg:text-7xl"
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            Progresse en maths avec méthode.
+            Les maths deviennent claires.
           </motion.h1>
 
           <motion.p
-            className="mt-6 max-w-xl text-lg leading-8 text-slate-300"
-            initial={{ opacity: 0, y: 32 }}
+            className="mt-7 max-w-xl text-xl leading-8 text-neutral-600"
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            DojoMath t’aide à réserver facilement un cours en ligne, choisir ton
-            niveau et progresser avec un accompagnement clair.
+            Un accompagnement simple, humain et structuré pour progresser avec confiance.
           </motion.p>
 
           <motion.div
-            className="mt-10 flex flex-col gap-4 sm:flex-row"
-            initial={{ opacity: 0, y: 32 }}
+            className="mt-9 flex flex-col gap-4 sm:flex-row"
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
             <Link
               href="/reservation"
-              className="rounded-full bg-sky-400 px-7 py-4 text-center font-bold text-slate-950 transition hover:scale-105 hover:bg-sky-300"
+              className="rounded-full bg-[#1d1d1f] px-7 py-4 text-center text-sm font-semibold text-white transition hover:scale-[1.03] hover:bg-[#6f1d1b]"
             >
               Réserver un cours
             </Link>
 
             <Link
               href="/tarifs"
-              className="rounded-full border border-white/20 px-7 py-4 text-center font-bold text-white transition hover:scale-105 hover:border-sky-400"
+              className="rounded-full border border-black/10 bg-white px-7 py-4 text-center text-sm font-semibold text-[#1d1d1f] transition hover:scale-[1.03] hover:border-[#6f1d1b]/30 hover:text-[#6f1d1b]"
             >
               Voir les tarifs
             </Link>
@@ -60,43 +58,28 @@ export default function Hero() {
         </div>
 
         <motion.div
-          className="glass rounded-[2rem] p-6 shadow-2xl"
-          initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
-          animate={{ opacity: 1, scale: 1, rotate: 0 }}
-          transition={{ delay: 0.4 }}
+          className="relative"
+          initial={{ opacity: 0, scale: 0.97, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.7 }}
         >
-          <div className="rounded-[1.5rem] bg-slate-900 p-6">
-            <div className="mb-6 flex gap-2">
-              <span className="h-3 w-3 rounded-full bg-red-400" />
-              <span className="h-3 w-3 rounded-full bg-yellow-400" />
-              <span className="h-3 w-3 rounded-full bg-green-400" />
-            </div>
+          <div className="relative overflow-hidden rounded-[2rem] bg-white shadow-2xl shadow-black/10">
+            <Image
+              src="/hero.jpg"
+              alt="Étudiant concentré dans un environnement calme"
+              width={900}
+              height={650}
+              priority
+              className="h-[500px] w-full object-cover"
+            />
 
-            <div className="space-y-4">
-              <div className="rounded-xl bg-slate-800 p-4">
-                <p className="text-sm text-slate-400">Aujourd’hui</p>
-                <p className="text-xl font-bold">
-                  Cours : Équations du second degré
-                </p>
-              </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/5 to-transparent" />
 
-              <div className="rounded-xl bg-sky-400 p-4 text-slate-950">
-                <p className="font-bold">Progression</p>
-                <div className="mt-3 h-3 rounded-full bg-sky-900/30">
-                  <div className="h-3 w-3/4 rounded-full bg-slate-950" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-xl bg-slate-800 p-4">
-                  <p className="text-3xl font-black">+42%</p>
-                  <p className="text-sm text-slate-400">confiance</p>
-                </div>
-                <div className="rounded-xl bg-slate-800 p-4">
-                  <p className="text-3xl font-black">1h</p>
-                  <p className="text-sm text-slate-400">par séance</p>
-                </div>
-              </div>
+            <div className="absolute bottom-6 left-6 right-6 rounded-3xl bg-white/85 p-5 text-[#1d1d1f] backdrop-blur-xl">
+              <p className="text-sm text-neutral-500">Aujourd’hui</p>
+              <p className="mt-1 text-xl font-semibold">
+                Un cours clair. Un vrai déclic.
+              </p>
             </div>
           </div>
         </motion.div>

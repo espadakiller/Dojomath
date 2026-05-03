@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 export default function MouseGlow() {
-  const [position, setPosition] = useState({ x: -300, y: -300 });
+  const [position, setPosition] = useState({ x: -100, y: -100 });
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
@@ -11,15 +11,19 @@ export default function MouseGlow() {
     };
 
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
   }, []);
 
   return (
     <div
-      className="pointer-events-none fixed z-0 hidden h-80 w-80 rounded-full bg-sky-400/10 blur-3xl md:block"
+      className="pointer-events-none fixed z-[9999] hidden h-12 w-12 rounded-full border border-black/20 bg-white/10 md:block"
       style={{
-        left: position.x - 160,
-        top: position.y - 160,
+        left: position.x - 24,
+        top: position.y - 24,
+        backdropFilter: "none",
       }}
     />
   );

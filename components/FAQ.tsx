@@ -34,15 +34,17 @@ export default function FAQ() {
           <button
             key={item.q}
             onClick={() => setOpenIndex(isOpen ? null : index)}
-            className="glass w-full rounded-2xl p-6 text-left transition hover:border-sky-400/50"
+            className="group w-full rounded-[2rem] border border-black/10 bg-white p-6 text-left text-[#1d1d1f] shadow-lg shadow-black/5 transition duration-300 hover:border-[#6f1d1b]/30 hover:bg-[#6f1d1b] hover:text-white hover:shadow-xl hover:shadow-[#6f1d1b]/15"
           >
             <div className="flex items-center justify-between gap-4">
-              <h3 className="text-lg font-bold">{item.q}</h3>
+              <h3 className="text-lg font-semibold">{item.q}</h3>
               {isOpen ? <Minus /> : <Plus />}
             </div>
 
             {isOpen && (
-              <p className="mt-4 leading-7 text-slate-300">{item.a}</p>
+              <p className="mt-4 leading-7 text-neutral-600 transition group-hover:text-white/75">
+                {item.a}
+              </p>
             )}
           </button>
         );
