@@ -104,12 +104,14 @@ export default function HomePage() {
               price="35€"
               description="Pour débloquer une difficulté."
               features={["1h en ligne", "Cours personnalisé"]}
+	      link="https://buy.stripe.com/bJe9ATfjldlc6R0az13Je00"
             />
             <PricingCard
               title="Pack progression"
               price="120€"
               description="Pour progresser rapidement."
               features={["4 séances", "Suivi personnalisé"]}
+	      link="https://buy.stripe.com/bJe9ATfjldlc6R0az13Je00"
               highlighted
             />
             <PricingCard
@@ -117,6 +119,7 @@ export default function HomePage() {
               price="250€"
               description="Programme intensif."
               features={["Annales", "Méthodologie"]}
+	      link="https://buy.stripe.com/bJe9ATfjldlc6R0az13Je00"
             />
           </div>
         </div>
