@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+/* Reset simple */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* Sélection texte */
+::selection {
+  background: #38bdf8;
+  color: #020617;
+}
+
+/* Effet glass (utilisé partout) */
+.glass {
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+/* Grille légère en fond */
+.background-grid {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Effet bruit léger */
+.noise {
+  background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
