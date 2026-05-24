@@ -91,11 +91,11 @@ export default function Hero() {
   const dailyQuote = getDailyQuote();
 
   return (
-    <section className="relative z-10 overflow-hidden bg-[#f5f5f7] px-6 pt-32 pb-24">
+    <section className="relative z-10 overflow-hidden bg-[#fbf7f0] px-6 pt-32 pb-24">
       <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.95fr_1.05fr]">
         <div>
           <motion.p
-            className="mb-6 text-sm font-medium text-[#6f1d1b]"
+            className="mb-6 text-sm font-medium text-[#6f1022]"
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -103,7 +103,7 @@ export default function Hero() {
           </motion.p>
 
           <motion.h1
-            className="max-w-3xl text-5xl font-semibold leading-[1.02] tracking-[-0.055em] text-[#1d1d1f] sm:text-6xl lg:text-7xl"
+            className="max-w-3xl text-5xl font-semibold leading-[1.02] tracking-[-0.055em] text-[#171313] sm:text-6xl lg:text-7xl"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -112,7 +112,7 @@ export default function Hero() {
           </motion.h1>
 
           <motion.p
-            className="mt-7 max-w-xl text-xl leading-8 text-neutral-600"
+            className="mt-7 max-w-xl text-xl leading-8 text-[#645c58]"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -130,14 +130,14 @@ export default function Hero() {
           >
             <Link
               href="/reservation"
-              className="rounded-full bg-[#1d1d1f] px-7 py-4 text-center text-sm font-semibold text-white transition hover:scale-[1.03] hover:bg-[#6f1d1b]"
+              className="rounded-full bg-[#6f1022] px-7 py-4 text-center text-sm font-semibold text-[#fffaf3] shadow-lg shadow-[#6f1022]/15 transition hover:scale-[1.03] hover:bg-[#8a1730]"
             >
               Réserver un cours
             </Link>
 
             <Link
               href="/tarifs"
-              className="rounded-full border border-black/10 bg-white px-7 py-4 text-center text-sm font-semibold text-[#1d1d1f] transition hover:scale-[1.03] hover:border-[#6f1d1b]/30 hover:text-[#6f1d1b]"
+              className="rounded-full border border-[#b88a3b]/35 bg-[#fffaf3] px-7 py-4 text-center text-sm font-semibold text-[#171313] transition hover:scale-[1.03] hover:border-[#b88a3b] hover:text-[#6f1022]"
             >
               Voir les tarifs
             </Link>
@@ -156,7 +156,7 @@ export default function Hero() {
           </div>
 
           <div className="absolute inset-0 z-10 flex items-center">
-            <div className="relative w-full overflow-hidden rounded-[2rem] bg-white shadow-2xl shadow-black/10 ring-1 ring-black/5">
+            <div className="relative w-full overflow-hidden rounded-[2rem] bg-[#fffaf3] shadow-2xl shadow-[#6f1022]/12 ring-1 ring-[#b88a3b]/25">
               <Image
                 src="/hero.jpg"
                 alt="Étudiant concentré dans un environnement calme"
@@ -168,14 +168,14 @@ export default function Hero() {
 
               <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/5 to-transparent" />
 
-              <div className="absolute bottom-6 left-6 right-6 rounded-3xl bg-white/88 p-5 text-[#1d1d1f] backdrop-blur-xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#6f1d1b]">
+              <div className="absolute bottom-6 left-6 right-6 rounded-3xl border border-[#b88a3b]/25 bg-[#fffaf3]/90 p-5 text-[#171313] backdrop-blur-xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#6f1022]">
                   Citation du jour
                 </p>
                 <p className="mt-2 text-lg font-semibold leading-7 sm:text-xl">
                   « {dailyQuote.text} »
                 </p>
-                <p className="mt-3 text-sm text-neutral-500">
+                <p className="mt-3 text-sm text-[#645c58]">
                   {dailyQuote.source}
                 </p>
               </div>

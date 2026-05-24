@@ -6,19 +6,19 @@ import { Plus, Minus } from "lucide-react";
 const questions = [
   {
     q: "Comment se déroule un cours ?",
-    a: "Le cours se fait en visio. On commence par identifier les difficultés, puis on travaille avec des explications simples et des exercices ciblés.",
+    a: "Le cours se fait en visio. On commence par comprendre ce qui bloque, puis on avance avec des explications simples, des exemples et des exercices ciblés.",
   },
   {
     q: "Puis-je réserver directement en ligne ?",
-    a: "Oui. Tu choisis un créneau disponible, puis tu confirmes ta réservation en ligne.",
+    a: "Oui. Tu choisis un créneau disponible, puis tu confirmes la réservation en ligne. Le premier cours permet aussi de poser le cadre du suivi.",
   },
   {
     q: "Le paiement est-il sécurisé ?",
-    a: "Oui. Le paiement pourra être géré avec Stripe, une solution de paiement sécurisée.",
+    a: "Oui. Le paiement passe par Stripe, une solution reconnue pour gérer les transactions en ligne de manière sécurisée.",
   },
   {
     q: "Quels niveaux sont acceptés ?",
-    a: "Collège, lycée, supérieur, remise à niveau et préparation aux examens.",
+    a: "Collège, lycée, remise à niveau, préparation brevet ou bac, et premières bases du supérieur selon le besoin de l'élève.",
   },
 ];
 
@@ -34,15 +34,15 @@ export default function FAQ() {
           <button
             key={item.q}
             onClick={() => setOpenIndex(isOpen ? null : index)}
-            className="group w-full rounded-[2rem] border border-black/10 bg-white p-6 text-left text-[#1d1d1f] shadow-lg shadow-black/5 transition duration-300 hover:border-[#6f1d1b]/30 hover:bg-[#6f1d1b] hover:text-white hover:shadow-xl hover:shadow-[#6f1d1b]/15"
+            className="group w-full rounded-[1.5rem] border border-[#b88a3b]/25 bg-[#fffaf6] p-6 text-left text-[#171313] shadow-lg shadow-[#6f1022]/5 transition duration-300 hover:border-[#b88a3b]/70 hover:bg-[#6f1022] hover:text-[#fffaf3] hover:shadow-xl hover:shadow-[#6f1022]/18"
           >
             <div className="flex items-center justify-between gap-4">
               <h3 className="text-lg font-semibold">{item.q}</h3>
-              {isOpen ? <Minus /> : <Plus />}
+              {isOpen ? <Minus className="shrink-0" /> : <Plus className="shrink-0" />}
             </div>
 
             {isOpen && (
-              <p className="mt-4 leading-7 text-neutral-600 transition group-hover:text-white/75">
+              <p className="mt-4 leading-7 text-[#645c58] transition group-hover:text-[#fffaf3]/78">
                 {item.a}
               </p>
             )}

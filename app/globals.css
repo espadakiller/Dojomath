@@ -11,8 +11,8 @@ html {
 body {
   overflow-x: hidden;
   margin: 0;
-  background: #f5f5f7;
-  color: #1d1d1f;
+  background: #fbf7f0;
+  color: #171313;
   font-family:
     -apple-system,
     BlinkMacSystemFont,
@@ -37,29 +37,29 @@ h3,
 }
 
 ::selection {
-  background: #5f1414;
-  color: white;
+  background: #6f1022;
+  color: #fffaf3;
 }
 
 .glass {
-  background: rgba(255, 255, 255, 0.76);
+  background: rgba(255, 250, 242, 0.78);
   backdrop-filter: blur(22px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(196, 154, 72, 0.24);
 }
 
 .clean-bg,
 .premium-gradient {
-  background: #f5f5f7;
+  background: #fbf7f0;
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #1d1d1f, #6f1d1b);
+  background: linear-gradient(135deg, #171313, #6f1022 58%, #b88a3b);
   -webkit-background-clip: text;
   color: transparent;
 }
 
 .red-glow {
-  box-shadow: 0 24px 80px rgba(111, 29, 27, 0.12);
+  box-shadow: 0 24px 80px rgba(107, 15, 31, 0.14);
 }
 
 .blue-glow {
@@ -111,9 +111,9 @@ h3,
   height: clamp(76px, 10vw, 112px);
   overflow: hidden;
   border-radius: 1.15rem;
-  border: 1px solid rgba(255, 255, 255, 0.68);
-  background: #ffffff;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.14);
+  border: 1px solid rgba(196, 154, 72, 0.3);
+  background: #fffaf3;
+  box-shadow: 0 20px 50px rgba(107, 15, 31, 0.13);
 }
 
 .hero-ticker-tile::after {

@@ -12,8 +12,8 @@ export default function CourseCard({
   description,
 }: CourseCardProps) {
   return (
-    <div className="group rounded-[2rem] border border-black/10 bg-white p-8 text-[#1d1d1f] shadow-lg shadow-black/5 transition duration-300 hover:-translate-y-2 hover:border-[#6f1d1b]/30 hover:bg-[#6f1d1b] hover:text-white hover:shadow-xl hover:shadow-[#6f1d1b]/15">
-      <div className="mb-10 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#1d1d1f] text-white transition group-hover:bg-white group-hover:text-[#1d1d1f]">
+    <div className="group rounded-[2rem] border border-[#b88a3b]/25 bg-[#fffaf3] p-8 text-[#171313] shadow-lg shadow-[#6f1022]/5 transition duration-300 hover:-translate-y-2 hover:border-[#b88a3b]/70 hover:bg-[#6f1022] hover:text-[#fffaf3] hover:shadow-xl hover:shadow-[#6f1022]/18">
+      <div className="mb-10 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#6f1022] text-[#fffaf3] transition group-hover:bg-[#b88a3b] group-hover:text-[#171313]">
         <Icon size={28} />
       </div>
 
@@ -21,7 +21,7 @@ export default function CourseCard({
         {title}
       </h3>
 
-      <p className="text-lg leading-8 text-neutral-600 transition group-hover:text-white/75">
+      <p className="text-lg leading-8 text-[#645c58] transition group-hover:text-[#fffaf3]/78">
         {description}
       </p>
     </div>

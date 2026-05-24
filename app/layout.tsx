@@ -18,7 +18,6 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body>
-        
         <Navbar />
         <main className="relative z-10">{children}</main>
         <Footer />

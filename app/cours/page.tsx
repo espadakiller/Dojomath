@@ -16,45 +16,45 @@ export default function CoursPage() {
       <div className="mx-auto max-w-7xl">
         <SectionTitle
           label="Cours"
-          title="Des cours pour chaque niveau"
-          description="DojoMath accompagne les élèves du collège au supérieur avec une méthode claire, progressive et adaptée."
+          title="Des cours pour chaque étape"
+          description="DojoMath accompagne les élèves du collège au supérieur avec une méthode claire, progressive et adaptée au programme suivi."
         />
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <CourseCard
             icon={Calculator}
             title="Collège"
-            description="Fractions, équations, géométrie, proportionnalité, calcul littéral et préparation au brevet."
+            description="6e, 5e, 4e et 3e : calcul, fractions, géométrie, proportionnalité, équations, fonctions, statistiques et préparation au brevet."
           />
 
           <CourseCard
             icon={FunctionSquare}
             title="Lycée"
-            description="Fonctions, dérivées, suites, probabilités, trigonométrie, spécialité maths et préparation au bac."
+            description="Seconde, Première et Terminale : tronc commun, spécialité mathématiques, mathématiques complémentaires ou expertes selon le parcours."
           />
 
           <CourseCard
             icon={GraduationCap}
             title="Supérieur"
-            description="Analyse, algèbre, statistiques, probabilités et remise à niveau selon ton cursus."
+            description="Analyse, algèbre, statistiques, probabilités et remise à niveau pour les débuts en santé, sciences ou ingénierie."
           />
 
           <CourseCard
             icon={BookOpen}
             title="Aide aux devoirs"
-            description="Accompagnement sur les exercices, devoirs maison, contrôles à préparer et corrections."
+            description="Accompagnement sur les exercices, devoirs maison, contrôles à préparer et corrections pour consolider la méthode."
           />
 
           <CourseCard
             icon={Target}
             title="Préparation examen"
-            description="Méthodologie, annales, entraînement chronométré et stratégie pour gagner des points."
+            description="Brevet, bac, contrôle important : méthodologie, exercices types, entraînement et stratégie pour gagner des points."
           />
 
           <CourseCard
             icon={Brain}
             title="Remise à niveau"
-            description="Reprise des bases essentielles pour reconstruire une compréhension solide des mathématiques."
+            description="Reprise des bases essentielles pour reconstruire une compréhension solide et retrouver confiance en mathématiques."
           />
         </div>
       </div>
