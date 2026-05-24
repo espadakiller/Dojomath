@@ -17,7 +17,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 z-50 w-full border-b border-[#b88a3b]/25 bg-[#fbf7f0]/92 backdrop-blur-xl">
+    <header className="fixed top-0 z-50 w-full border-b border-[#b88a3b]/25 bg-[#f1e4d1]/92 backdrop-blur-xl">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 md:py-3 lg:px-8 lg:py-5">
         <Logo />
 
@@ -50,7 +50,7 @@ export default function Navbar() {
       </nav>
 
       {isOpen && (
-        <div className="border-t border-[#b88a3b]/25 bg-[#fbf7f0] px-8 py-6 md:hidden">
+        <div className="border-t border-[#b88a3b]/25 bg-[#f1e4d1] px-8 py-6 md:hidden">
           <div className="flex flex-col gap-3">
             {links.map((link) => (
               <Link

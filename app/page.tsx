@@ -71,7 +71,7 @@ export default function HomePage() {
           <SectionVisual
             src="/section-images/method.png"
             alt="Un bureau de travail chaleureux avec un cahier de mathématiques et une leçon en ligne"
-            caption="Une séance structurée, patiente et centrée sur le déclic."
+            caption="Une séance claire, progressive et pensée pour redonner confiance."
           />
 
           <div className="grid gap-6 md:grid-cols-3">
@@ -113,7 +113,7 @@ export default function HomePage() {
           <SectionVisual
             src="/section-images/levels.png"
             alt="Des cahiers, instruments de géométrie et supports de mathématiques pour différents niveaux"
-            caption="Collège, lycée et premières bases du supérieur, avec une progression lisible."
+            caption="Collège, lycée et premières bases du supérieur, avec un accompagnement adapté."
           />
 
           <div className="grid gap-6 md:grid-cols-3">
@@ -168,7 +168,7 @@ export default function HomePage() {
             />
             <PricingCard
               title="Progression"
-              price="109 €/mois"
+              price="110 €/mois"
               description="4h par mois avec suivi régulier."
               features={["4h de cours par mois", "Rythme stable", "Suivi des points à consolider"]}
               link={stripeLink}
@@ -177,7 +177,7 @@ export default function HomePage() {
             />
             <PricingCard
               title="Réussite"
-              price="159 €/mois"
+              price="140 €/mois"
               description="6h par mois pour un accompagnement plus poussé."
               features={["6h de cours par mois", "Suivi renforcé", "Préparation des échéances importantes"]}
               link={stripeLink}
@@ -185,7 +185,7 @@ export default function HomePage() {
             />
             <PricingCard
               title="Stage Vacances"
-              price="79 €"
+              price="65 €"
               description="Une séance intensive de 3h uniquement pendant les vacances scolaires."
               features={["Séance de 3h", "Révisions ciblées", "Vacances scolaires uniquement"]}
               link={stripeLink}
@@ -214,6 +214,20 @@ export default function HomePage() {
 
             <AnimatedSection>
               <div className="rounded-[2rem] border border-[#b88a3b]/25 bg-[#fffaf3] p-8 text-[#171313] shadow-xl shadow-[#6f1022]/8 md:p-10">
+                <div className="mb-6 flex items-center gap-4">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#6f1022] text-[#fffaf3] shadow-lg shadow-[#6f1022]/15">
+                    <ShieldCheck size={26} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#6f1022]">
+                      DojoMath
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-[#171313]">
+                      Sérieux, clarté et accompagnement humain
+                    </p>
+                  </div>
+                </div>
+
                 <p className="text-lg leading-8 text-[#645c58]">
                   DojoMath est porté par un enseignant certifié, actuellement
                   en poste au collège, qui accompagne des élèves depuis plusieurs

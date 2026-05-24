@@ -29,16 +29,21 @@ export default function FAQ() {
     <div className="mx-auto max-w-4xl space-y-4">
       {questions.map((item, index) => {
         const isOpen = openIndex === index;
+        const Icon = isOpen ? Minus : Plus;
 
         return (
           <button
             key={item.q}
             onClick={() => setOpenIndex(isOpen ? null : index)}
-            className="group w-full rounded-[1.5rem] border border-[#b88a3b]/25 bg-[#fffaf6] p-6 text-left text-[#171313] shadow-lg shadow-[#6f1022]/5 transition duration-300 hover:border-[#b88a3b]/70 hover:bg-[#6f1022] hover:text-[#fffaf3] hover:shadow-xl hover:shadow-[#6f1022]/18"
+            className="group w-full rounded-[1.5rem] border border-[#b88a3b]/25 bg-[#fffaf6] p-6 text-left text-[#171313] shadow-lg shadow-[#6f1022]/5 transition duration-300 hover:-translate-y-1 hover:border-[#b88a3b]/70 hover:bg-[#6f1022] hover:text-[#fffaf3] hover:shadow-xl hover:shadow-[#6f1022]/18"
           >
             <div className="flex items-center justify-between gap-4">
-              <h3 className="text-lg font-semibold">{item.q}</h3>
-              {isOpen ? <Minus className="shrink-0" /> : <Plus className="shrink-0" />}
+              <h3 className="text-lg font-semibold transition group-hover:text-[#fffaf3]">
+                {item.q}
+              </h3>
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#6f1022] text-[#fffaf3] transition group-hover:bg-[#b88a3b] group-hover:text-[#171313]">
+                <Icon size={20} />
+              </span>
             </div>
 
             {isOpen && (

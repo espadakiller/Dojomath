@@ -91,7 +91,7 @@ export default function Hero() {
   const dailyQuote = getDailyQuote();
 
   return (
-    <section className="relative z-10 overflow-hidden bg-[#fbf7f0] px-6 pt-32 pb-24">
+    <section className="relative z-10 overflow-hidden px-6 pt-32 pb-24">
       <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.95fr_1.05fr]">
         <div>
           <motion.p

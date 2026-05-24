@@ -28,7 +28,7 @@ export default function TarifsPage() {
 
           <PricingCard
             title="Progression"
-            price="109 €/mois"
+            price="110 €/mois"
             description="4h par mois avec suivi régulier."
             features={[
               "4h de cours par mois",
@@ -42,7 +42,7 @@ export default function TarifsPage() {
 
           <PricingCard
             title="Réussite"
-            price="159 €/mois"
+            price="140 €/mois"
             description="6h par mois pour un accompagnement plus poussé."
             features={[
               "6h de cours par mois",
@@ -55,7 +55,7 @@ export default function TarifsPage() {
 
           <PricingCard
             title="Stage Vacances"
-            price="79 €"
+            price="65 €"
             description="Une séance intensive de 3h uniquement pendant les vacances scolaires."
             features={[
               "Séance de 3h",

@@ -11,7 +11,7 @@ html {
 body {
   overflow-x: hidden;
   margin: 0;
-  background: #fbf7f0;
+  background: #f1e4d1;
   color: #171313;
   font-family:
     -apple-system,
@@ -21,6 +21,39 @@ body {
     "Helvetica Neue",
     Arial,
     sans-serif;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("/dojomath-logo-mark.png");
+  background-position: 2rem 2rem;
+  background-repeat: repeat;
+  background-size: 118px auto;
+  filter: sepia(0.34) saturate(0.92) contrast(1.55) brightness(0.92) opacity(0.82);
+  opacity: 0.3;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 18% 18%, rgba(184, 138, 59, 0.12), transparent 24%),
+    radial-gradient(circle at 78% 28%, rgba(111, 16, 34, 0.07), transparent 22%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.16) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14) 1px, transparent 1px);
+  background-size:
+    720px 720px,
+    840px 840px,
+    42px 42px,
+    42px 42px;
+  opacity: 0.36;
 }
 
 h1,
@@ -49,7 +82,7 @@ h3,
 
 .clean-bg,
 .premium-gradient {
-  background: #fbf7f0;
+  background: #f1e4d1;
 }
 
 .text-gradient {

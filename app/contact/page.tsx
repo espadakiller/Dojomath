@@ -1,8 +1,8 @@
 export default function ContactPage() {
   return (
-    <main className="min-h-screen bg-[#fbf7f0] px-5 pt-36 pb-24">
+    <main className="min-h-screen px-5 pt-36 pb-24">
       <div className="mx-auto max-w-3xl">
-        <div className="rounded-[2rem] border border-[#b88a3b]/25 bg-[#fffaf3] p-10 shadow-xl shadow-[#6f1022]/8">
+        <div className="rounded-[2rem] border border-[#b88a3b]/25 bg-[#fffaf3] p-10 shadow-xl shadow-[#6f1022]/8 transition duration-300 hover:border-[#b88a3b]/55">
           <p className="mb-3 text-sm font-semibold uppercase tracking-[0.25em] text-[#6f1022]">
             Contact
           </p>
@@ -37,7 +37,7 @@ export default function ContactPage() {
 
             <button
               type="submit"
-              className="w-full rounded-full bg-[#6f1022] px-6 py-4 font-semibold text-[#fffaf3] transition hover:scale-[1.02] hover:bg-[#6f1022]"
+              className="w-full rounded-full bg-[#6f1022] px-6 py-4 font-semibold text-[#fffaf3] transition hover:scale-[1.02] hover:bg-[#8a1730] hover:shadow-lg hover:shadow-[#6f1022]/20"
             >
               Envoyer le message
             </button>
