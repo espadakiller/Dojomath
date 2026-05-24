@@ -1,3 +1,5 @@
+import ContactForm from "@/components/ContactForm";
+
 export default function ContactPage() {
   return (
     <main className="min-h-screen px-5 pt-36 pb-24">
@@ -8,40 +10,16 @@ export default function ContactPage() {
           </p>
 
           <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[#171313] md:text-5xl">
-            Une question avant de réserver ?
+            Nous contacter
           </h1>
 
           <p className="mt-5 text-lg leading-relaxed text-[#645c58]">
-            Décris ton niveau, tes difficultés ou ton objectif. Je te répondrai
-            rapidement avec une solution adaptée.
+            Pour une question sur les cours, les disponibilités ou la formule la
+            plus adaptée, vous pouvez envoyer un message directement depuis ce
+            formulaire. Une réponse vous sera apportée dans les meilleurs délais.
           </p>
 
-          <form className="mt-10 space-y-6">
-            <input
-              type="text"
-              placeholder="Nom"
-              className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-5 py-4 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
-            />
-
-            <input
-              type="email"
-              placeholder="Email"
-              className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-5 py-4 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
-            />
-
-            <textarea
-              placeholder="Message"
-              rows={6}
-              className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-5 py-4 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
-            />
-
-            <button
-              type="submit"
-              className="w-full rounded-full bg-[#6f1022] px-6 py-4 font-semibold text-[#fffaf3] transition hover:scale-[1.02] hover:bg-[#8a1730] hover:shadow-lg hover:shadow-[#6f1022]/20"
-            >
-              Envoyer le message
-            </button>
-          </form>
+          <ContactForm />
         </div>
       </div>
     </main>

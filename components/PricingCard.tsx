@@ -8,6 +8,7 @@ type PricingCardProps = {
   link: string;
   highlighted?: boolean;
   badge?: string;
+  ctaLabel?: string;
 };
 
 export default function PricingCard({
@@ -18,7 +19,10 @@ export default function PricingCard({
   link,
   highlighted = false,
   badge,
+  ctaLabel = "Voir les détails",
 }: PricingCardProps) {
+  const isExternalLink = link.startsWith("http");
+
   return (
     <div
       className={`group relative flex h-full flex-col rounded-[2rem] border bg-[#fffaf3] p-8 text-[#171313] shadow-lg shadow-[#6f1022]/5 transition duration-300 hover:-translate-y-2 hover:border-[#b88a3b]/70 hover:bg-[#6f1022] hover:text-[#fffaf3] hover:shadow-xl hover:shadow-[#6f1022]/18 ${
@@ -57,11 +61,11 @@ export default function PricingCard({
 
       <a
         href={link}
-        target="_blank"
-        rel="noopener noreferrer"
+        target={isExternalLink ? "_blank" : undefined}
+        rel={isExternalLink ? "noopener noreferrer" : undefined}
         className="mt-8 inline-block w-full rounded-full bg-[#6f1022] px-6 py-4 text-center text-sm font-semibold text-[#fffaf3] transition hover:scale-[1.03] group-hover:bg-[#b88a3b] group-hover:text-[#171313]"
       >
-        Réserver cette formule
+        {ctaLabel}
       </a>
     </div>
   );

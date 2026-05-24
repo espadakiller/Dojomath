@@ -8,6 +8,7 @@ import AnimatedSection from "@/components/AnimatedSection";
 import FAQ from "@/components/FAQ";
 import StatsStrip from "@/components/StatsStrip";
 import PremiumButton from "@/components/PremiumButton";
+import { pricingPlans } from "@/lib/pricing";
 
 import {
   Calculator,
@@ -17,8 +18,6 @@ import {
   Video,
   ShieldCheck,
 } from "lucide-react";
-
-const stripeLink = "https://buy.stripe.com/bJe9ATfjldlc6R0az13Je00";
 
 function SectionVisual({
   src,
@@ -161,38 +160,18 @@ export default function HomePage() {
           />
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            <PricingCard
-              title="Liberté"
-              price="25 €/h"
-              description="Une séance simple et flexible, sans engagement."
-              features={["1h de cours en ligne", "Objectif ciblé", "Idéal pour débloquer une difficulté"]}
-              link={stripeLink}
-            />
-            <PricingCard
-              title="Progression"
-              price="110 €/mois"
-              description="4h par mois avec suivi régulier."
-              features={["4h de cours par mois", "Rythme stable", "Suivi des points à consolider"]}
-              link={stripeLink}
-              badge="Le plus choisi"
-              highlighted
-            />
-            <PricingCard
-              title="Réussite"
-              price="140 €/mois"
-              description="6h par mois pour un accompagnement plus poussé."
-              features={["6h de cours par mois", "Suivi renforcé", "Préparation des échéances importantes"]}
-              link={stripeLink}
-              badge="Suivi renforcé"
-            />
-            <PricingCard
-              title="Stage Vacances"
-              price="65 €"
-              description="Une séance intensive de 3h uniquement pendant les vacances scolaires."
-              features={["Séance de 3h", "Révisions ciblées", "Vacances scolaires uniquement"]}
-              link={stripeLink}
-              badge="Vacances scolaires uniquement"
-            />
+            {pricingPlans.map((plan) => (
+              <PricingCard
+                key={plan.id}
+                title={plan.title}
+                price={plan.price}
+                description={plan.description}
+                features={[...plan.features]}
+                link={plan.detailHref}
+                badge={plan.badge}
+                highlighted={"highlighted" in plan ? plan.highlighted : false}
+              />
+            ))}
           </div>
         </div>
       </section>
