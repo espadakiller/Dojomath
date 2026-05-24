@@ -31,15 +31,17 @@ function SectionVisual({
 }) {
   return (
     <AnimatedSection>
-      <div className="group relative mb-12 overflow-hidden rounded-[2rem] border border-[#b88a3b]/25 bg-[#fffaf3] p-3 shadow-xl shadow-[#6f1022]/8 transition duration-500 hover:-translate-y-1 hover:border-[#b88a3b]/60 hover:shadow-2xl hover:shadow-[#6f1022]/15">
-        <Image
-          src={src}
-          alt={alt}
-          width={1200}
-          height={750}
-          className="aspect-[16/9] w-full rounded-[1.5rem] object-cover transition duration-700 group-hover:scale-[1.025]"
-        />
-        <p className="absolute bottom-6 left-6 right-6 rounded-full border border-[#b88a3b]/30 bg-[#fffaf3]/88 px-5 py-3 text-sm font-semibold text-[#6f1022] shadow-lg shadow-[#6f1022]/10 backdrop-blur">
+        <div className="group relative mx-auto mb-12 max-w-4xl overflow-hidden rounded-[2rem] border border-[#b88a3b]/25 bg-[#fffaf3] p-3 shadow-xl shadow-[#6f1022]/8 transition duration-500 hover:-translate-y-1 hover:border-[#b88a3b]/60 hover:shadow-2xl hover:shadow-[#6f1022]/15">
+          <Image
+            src={src}
+            alt={alt}
+            width={960}
+            height={600}
+            quality={74}
+            sizes="(min-width: 1024px) 896px, calc(100vw - 40px)"
+            className="aspect-[16/9] w-full rounded-[1.5rem] object-cover transition duration-700 group-hover:scale-[1.025]"
+          />
+        <p className="absolute bottom-5 left-5 right-5 rounded-[1.4rem] border border-[#b88a3b]/35 bg-[#fffaf3]/92 px-6 py-4 text-base font-semibold leading-6 text-[#6f1022] shadow-lg shadow-[#6f1022]/10 backdrop-blur md:bottom-7 md:left-7 md:right-7 md:px-8 md:py-5 md:text-lg">
           {caption}
         </p>
       </div>
@@ -69,7 +71,7 @@ export default function HomePage() {
           </AnimatedSection>
 
           <SectionVisual
-            src="/section-images/method.png"
+            src="/section-images/method.jpg"
             alt="Un bureau de travail chaleureux avec un cahier de mathématiques et une leçon en ligne"
             caption="Une séance claire, progressive et pensée pour redonner confiance."
           />
@@ -111,7 +113,7 @@ export default function HomePage() {
           </AnimatedSection>
 
           <SectionVisual
-            src="/section-images/levels.png"
+            src="/section-images/levels.jpg"
             alt="Des cahiers, instruments de géométrie et supports de mathématiques pour différents niveaux"
             caption="Collège, lycée et premières bases du supérieur, avec un accompagnement adapté."
           />
@@ -153,7 +155,7 @@ export default function HomePage() {
           </AnimatedSection>
 
           <SectionVisual
-            src="/section-images/pricing.png"
+            src="/section-images/pricing.jpg"
             alt="Un calendrier élégant et des supports de cours pour organiser les formules DojoMath"
             caption="Des formules lisibles, sans détour, pour avancer au bon rythme."
           />
@@ -207,7 +209,7 @@ export default function HomePage() {
 
           <div className="grid items-center gap-8 lg:grid-cols-[0.95fr_1.05fr]">
             <SectionVisual
-              src="/section-images/about.png"
+              src="/section-images/about.jpg"
               alt="Un espace de travail d'enseignant avec cahier, outils de géométrie et livres de mathématiques"
               caption="Une méthode issue de la classe, du cours particulier et de l’accompagnement exigeant."
             />
