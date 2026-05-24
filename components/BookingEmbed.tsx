@@ -10,8 +10,8 @@ export default function BookingEmbed() {
           Choisir une formule avant le créneau
         </h2>
         <p className="mt-3 max-w-3xl text-[#645c58]">
-          Chaque formule correspond à une durée et un prix. Les liens Calendly
-          peuvent être séparés par formule pour proposer les bons créneaux.
+          Chaque formule correspond à une durée et un prix. Les liens Cal.com
+          sont séparés par formule afin de proposer les bons créneaux.
         </p>
       </div>
 
@@ -40,7 +40,7 @@ export default function BookingEmbed() {
 
       <div className="overflow-hidden rounded-3xl border border-[#b88a3b]/25 bg-[#fffaf3] shadow-lg shadow-[#6f1022]/5">
         <iframe
-          src={process.env.NEXT_PUBLIC_CALENDLY_DEFAULT_URL ?? "https://calendly.com/dojomath"}
+          src={process.env.NEXT_PUBLIC_CALENDLY_DEFAULT_URL ?? "https://cal.com/dojomath/liberte"}
           title="Réservation DojoMath"
           className="h-[760px] w-full"
         />

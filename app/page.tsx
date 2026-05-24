@@ -149,7 +149,7 @@ export default function HomePage() {
             <SectionTitle
               label="Formules"
               title="Quatre façons simples de commencer"
-              description="Un cours ponctuel, un rythme mensuel ou une séance intensive pendant les vacances : tu choisis le format qui colle au besoin du moment."
+              description="Un cours ponctuel, un rythme mensuel ou une séance intensive pendant les vacances : vous choisissez le format qui correspond à votre besoin."
             />
           </AnimatedSection>
 
@@ -260,8 +260,8 @@ export default function HomePage() {
             </h2>
 
             <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-[#645c58]">
-              Choisis un créneau, explique ce qui bloque, et on construit une
-              première séance claire, utile et rassurante.
+              Choisissez un créneau, indiquez ce qui bloque, et nous construisons
+              une première séance claire, utile et rassurante.
             </p>
 
             <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">

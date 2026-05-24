@@ -1,7 +1,18 @@
 export type PlanId = "liberte" | "progression" | "reussite" | "stage";
 
-const fallbackStripeLink = "https://buy.stripe.com/bJe9ATfjldlc6R0az13Je00";
-const fallbackCalendlyLink = "https://calendly.com/dojomath";
+const stripeLinks = {
+  liberte: "https://buy.stripe.com/28E3cv5ILch83EO9uX3Je01",
+  progression: "https://buy.stripe.com/dRmfZh9Z14OG0sC5eH3Je02",
+  reussite: "https://buy.stripe.com/14AdR9efha903EObD53Je03",
+  stage: "https://buy.stripe.com/dRmbJ1dbd6WO3EOfTl3Je04",
+} satisfies Record<PlanId, string>;
+
+const calLinks = {
+  liberte: "https://cal.com/dojomath/liberte",
+  progression: "https://cal.com/dojomath/progression",
+  reussite: "https://cal.com/dojomath/reussite",
+  stage: "https://cal.com/dojomath/stage-vacances",
+} satisfies Record<PlanId, string>;
 
 export const pricingPlans = [
   {
@@ -17,9 +28,9 @@ export const pricingPlans = [
       "Idéal pour débloquer une difficulté",
     ],
     detailHref: "/tarifs#liberte",
-    stripeHref: process.env.NEXT_PUBLIC_STRIPE_LIBERTE_URL ?? fallbackStripeLink,
+    stripeHref: process.env.NEXT_PUBLIC_STRIPE_LIBERTE_URL ?? stripeLinks.liberte,
     calendlyHref:
-      process.env.NEXT_PUBLIC_CALENDLY_LIBERTE_URL ?? fallbackCalendlyLink,
+      process.env.NEXT_PUBLIC_CALENDLY_LIBERTE_URL ?? calLinks.liberte,
   },
   {
     id: "progression",
@@ -35,9 +46,9 @@ export const pricingPlans = [
     ],
     detailHref: "/tarifs#progression",
     stripeHref:
-      process.env.NEXT_PUBLIC_STRIPE_PROGRESSION_URL ?? fallbackStripeLink,
+      process.env.NEXT_PUBLIC_STRIPE_PROGRESSION_URL ?? stripeLinks.progression,
     calendlyHref:
-      process.env.NEXT_PUBLIC_CALENDLY_PROGRESSION_URL ?? fallbackCalendlyLink,
+      process.env.NEXT_PUBLIC_CALENDLY_PROGRESSION_URL ?? calLinks.progression,
     highlighted: true,
   },
   {
@@ -53,9 +64,10 @@ export const pricingPlans = [
       "Préparation des échéances importantes",
     ],
     detailHref: "/tarifs#reussite",
-    stripeHref: process.env.NEXT_PUBLIC_STRIPE_REUSSITE_URL ?? fallbackStripeLink,
+    stripeHref:
+      process.env.NEXT_PUBLIC_STRIPE_REUSSITE_URL ?? stripeLinks.reussite,
     calendlyHref:
-      process.env.NEXT_PUBLIC_CALENDLY_REUSSITE_URL ?? fallbackCalendlyLink,
+      process.env.NEXT_PUBLIC_CALENDLY_REUSSITE_URL ?? calLinks.reussite,
   },
   {
     id: "stage",
@@ -71,9 +83,9 @@ export const pricingPlans = [
       "Vacances scolaires uniquement",
     ],
     detailHref: "/tarifs#stage",
-    stripeHref: process.env.NEXT_PUBLIC_STRIPE_STAGE_URL ?? fallbackStripeLink,
+    stripeHref: process.env.NEXT_PUBLIC_STRIPE_STAGE_URL ?? stripeLinks.stage,
     calendlyHref:
-      process.env.NEXT_PUBLIC_CALENDLY_STAGE_URL ?? fallbackCalendlyLink,
+      process.env.NEXT_PUBLIC_CALENDLY_STAGE_URL ?? calLinks.stage,
   },
 ] as const;
 

@@ -6,11 +6,11 @@ import { Plus, Minus } from "lucide-react";
 const questions = [
   {
     q: "Comment se déroule un cours ?",
-    a: "Le cours se fait en visio. On commence par comprendre ce qui bloque, puis on avance avec des explications simples, des exemples et des exercices ciblés.",
+    a: "Le cours se fait en visio. Nous commençons par comprendre ce qui bloque, puis nous avançons avec des explications simples, des exemples et des exercices ciblés.",
   },
   {
     q: "Puis-je réserver directement en ligne ?",
-    a: "Oui. Tu choisis un créneau disponible, puis tu confirmes la réservation en ligne. Le premier cours permet aussi de poser le cadre du suivi.",
+    a: "Oui. Vous choisissez un créneau disponible, puis vous confirmez la réservation en ligne. Le premier cours permet aussi de poser le cadre du suivi.",
   },
   {
     q: "Le paiement est-il sécurisé ?",

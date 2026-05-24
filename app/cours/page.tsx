@@ -105,7 +105,7 @@ export default function CoursPage() {
         <SectionTitle
           label="Cours"
           title="Des espaces pour chaque besoin"
-          description="Choisis une catégorie pour accéder aux niveaux, chapitres et futurs documents associés."
+          description="Choisissez une catégorie pour accéder aux niveaux, chapitres et futurs documents associés."
         />
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

@@ -7,8 +7,8 @@ export default function ReservationPage() {
       <div className="mx-auto max-w-7xl">
         <SectionTitle
           label="Réservation"
-          title="Prends rendez-vous en quelques secondes"
-          description="Choisis un créneau disponible et réserve ton cours de mathématiques en ligne."
+          title="Réservez un cours en quelques secondes"
+          description="Choisissez la formule adaptée, puis sélectionnez un créneau disponible pour votre cours de mathématiques en ligne."
         />
 
         <BookingEmbed />
