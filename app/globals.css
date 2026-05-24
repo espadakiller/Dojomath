@@ -66,3 +66,78 @@ h3,
   box-shadow: none;
 }
 
+.logo-mark-spin {
+  animation: logo-mark-rotate 18s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes logo-mark-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.hero-ticker {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: clamp(86px, 12vw, 122px);
+  pointer-events: none;
+}
+
+.hero-ticker-track {
+  --hero-ticker-gap: clamp(0.6rem, 1.3vw, 0.9rem);
+  --hero-ticker-duration: 28s;
+
+  display: flex;
+  width: max-content;
+  gap: var(--hero-ticker-gap);
+  animation: hero-ticker-move var(--hero-ticker-duration) linear infinite;
+  will-change: transform;
+}
+
+.hero-ticker-right .hero-ticker-track {
+  animation-direction: reverse;
+}
+
+.hero-ticker-left .hero-ticker-track {
+  --hero-ticker-duration: 22s;
+}
+
+.hero-ticker-tile {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(104px, 14vw, 156px);
+  height: clamp(76px, 10vw, 112px);
+  overflow: hidden;
+  border-radius: 1.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  background: #ffffff;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.14);
+}
+
+.hero-ticker-tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 34%),
+    linear-gradient(0deg, rgba(111, 29, 27, 0.12), transparent 54%);
+}
+
+@keyframes hero-ticker-move {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-50% - (var(--hero-ticker-gap) / 2)));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-mark-spin,
+  .hero-ticker-track {
+    animation-play-state: paused;
+  }
+}

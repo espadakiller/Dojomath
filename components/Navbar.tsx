@@ -18,15 +18,15 @@ export default function Navbar() {
 
   return (
     <header className="fixed top-0 z-50 w-full border-b border-black/10 bg-[#ececec]/90 backdrop-blur-xl">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-8 py-5">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 md:py-3 lg:px-8 lg:py-5">
         <Logo />
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-1.5 md:flex lg:gap-3">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-full px-5 py-3 text-base font-semibold text-neutral-700 transition duration-200 hover:bg-white hover:text-[#5f1414] hover:shadow-sm"
+              className="rounded-full px-3 py-2.5 text-sm font-semibold text-neutral-700 transition duration-200 hover:bg-white hover:text-[#5f1414] hover:shadow-sm lg:px-5 lg:py-3 lg:text-base"
             >
               {link.label}
             </Link>
@@ -34,7 +34,7 @@ export default function Navbar() {
 
           <Link
             href="/reservation"
-            className="ml-3 rounded-full bg-[#1d1d1f] px-7 py-3 text-base font-semibold text-white transition duration-200 hover:bg-[#5f1414] hover:shadow-lg hover:shadow-[#5f1414]/20"
+            className="ml-1 rounded-full bg-[#1d1d1f] px-4 py-2.5 text-sm font-semibold text-white transition duration-200 hover:bg-[#5f1414] hover:shadow-lg hover:shadow-[#5f1414]/20 lg:ml-3 lg:px-7 lg:py-3 lg:text-base"
           >
             Réserver
           </Link>
