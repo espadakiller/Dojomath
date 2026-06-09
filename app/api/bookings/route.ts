@@ -1,22 +1,23 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
 
-import { findAccount, upsertAccount } from "@/lib/account-store";
-import { getAccountName } from "@/lib/accounts";
+import { upsertAccount } from "@/lib/account-store";
+import { getAccountName, toPublicAccount } from "@/lib/accounts";
+import {
+  createBooking,
+  readBookings,
+  readBookingsByAccount,
+} from "@/lib/booking-store";
 import {
   bookingPlanRules,
   getSlotsForPlan,
   type BookingRecord,
   type BookingRequest,
 } from "@/lib/booking";
+import { getCurrentAccount } from "@/lib/local-auth";
 import type { PlanId } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
-
-const dataDirectory = path.join(process.cwd(), ".data");
-const bookingsFile = path.join(dataDirectory, "bookings.json");
 
 function asText(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -26,39 +27,33 @@ function isPlanId(value: string): value is PlanId {
   return value in bookingPlanRules;
 }
 
-async function readBookings() {
-  try {
-    const content = await readFile(bookingsFile, "utf8");
-    return JSON.parse(content) as BookingRecord[];
-  } catch {
-    return [];
-  }
-}
+export async function GET() {
+  const account = await getCurrentAccount();
 
-async function writeBookings(bookings: BookingRecord[]) {
-  await mkdir(dataDirectory, { recursive: true });
-  await writeFile(bookingsFile, `${JSON.stringify(bookings, null, 2)}\n`, "utf8");
-}
-
-export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const accountId = asText(url.searchParams.get("accountId"));
-
-  if (!accountId) {
+  if (!account) {
     return Response.json(
-      { ok: false, message: "Compte requis." },
-      { status: 400 },
+      { ok: false, message: "Connexion requise." },
+      { status: 401 },
     );
   }
 
-  const bookings = await readBookings();
+  const bookings = await readBookingsByAccount(account.id);
   return Response.json({
     ok: true,
-    bookings: bookings.filter((booking) => booking.accountId === accountId),
+    bookings,
   });
 }
 
 export async function POST(request: Request) {
+  const account = await getCurrentAccount();
+
+  if (!account) {
+    return Response.json(
+      { ok: false, message: "Connectez-vous avant de réserver." },
+      { status: 401 },
+    );
+  }
+
   let payload: Partial<BookingRequest>;
 
   try {
@@ -70,7 +65,6 @@ export async function POST(request: Request) {
     );
   }
 
-  const accountId = asText(payload.accountId);
   const planId = asText(payload.planId);
   const date = asText(payload.date);
   const time = asText(payload.time);
@@ -79,27 +73,10 @@ export async function POST(request: Request) {
   const topic = asText(payload.topic);
   const notes = asText(payload.notes);
 
-  if (
-    !accountId ||
-    !isPlanId(planId) ||
-    !date ||
-    !time ||
-    !studentName ||
-    !level ||
-    !topic
-  ) {
+  if (!isPlanId(planId) || !date || !time || !studentName || !level || !topic) {
     return Response.json(
       { ok: false, message: "Tous les champs nécessaires sont obligatoires." },
       { status: 400 },
-    );
-  }
-
-  const account = await findAccount(accountId);
-
-  if (!account) {
-    return Response.json(
-      { ok: false, message: "Créez un compte avant de réserver." },
-      { status: 401 },
     );
   }
 
@@ -133,7 +110,7 @@ export async function POST(request: Request) {
 
   const booking: BookingRecord = {
     id: randomUUID(),
-    accountId,
+    accountId: account.id,
     planId,
     planTitle: rule.title,
     date,
@@ -154,7 +131,10 @@ export async function POST(request: Request) {
     updatedAt: new Date().toISOString(),
   });
 
-  await writeBookings([booking, ...bookings]);
+  await createBooking(booking);
 
-  return Response.json({ ok: true, booking, account: nextAccount }, { status: 201 });
+  return Response.json(
+    { ok: true, booking, account: toPublicAccount(nextAccount) },
+    { status: 201 },
+  );
 }

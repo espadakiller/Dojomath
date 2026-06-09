@@ -9,11 +9,12 @@ import {
   Clock,
   Coins,
   CreditCard,
+  LogOut,
   User,
   Video,
 } from "lucide-react";
 
-import { getAccountName, type AccountRecord } from "@/lib/accounts";
+import { getAccountName, type PublicAccount } from "@/lib/accounts";
 import {
   bookingPlanRules,
   formatDateLabel,
@@ -42,11 +43,11 @@ const planBadges = {
 } satisfies Record<PlanId, string>;
 
 type AccountResponse =
-  | { ok: true; account: AccountRecord; message?: string }
+  | { ok: true; account: PublicAccount | null; message?: string }
   | { ok: false; message: string };
 
 type BookingResponse =
-  | { ok: true; booking: BookingRecord; account: AccountRecord }
+  | { ok: true; booking: BookingRecord; account: PublicAccount }
   | { ok: false; message: string };
 
 function firstAvailableDate(planId: PlanId, days: string[]) {
@@ -57,20 +58,14 @@ function getPlan(planId: PlanId) {
   return pricingPlans.find((plan) => plan.id === planId) ?? pricingPlans[0];
 }
 
-function readStoredAccountId() {
-  if (typeof window === "undefined") {
-    return "";
-  }
-
-  return window.localStorage.getItem("dojomath-account-id") ?? "";
-}
-
 export default function BookingEmbed() {
   const days = useMemo(() => getBookingDays(18), []);
-  const [storedAccountId] = useState(readStoredAccountId);
-  const [account, setAccount] = useState<AccountRecord | null>(null);
+  const [account, setAccount] = useState<PublicAccount | null>(null);
+  const [authMode, setAuthMode] = useState<"signup" | "login">("signup");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [selectedPlanId, setSelectedPlanId] = useState<PlanId>("progression");
   const [selectedDate, setSelectedDate] = useState(() =>
     firstAvailableDate("progression", days),
@@ -93,10 +88,8 @@ export default function BookingEmbed() {
   const displayedDays = days.slice(dayPage * 6, dayPage * 6 + 12);
   const hasEnoughTokens = (account?.tokens ?? 0) >= selectedRule.durationHours;
 
-  async function loadBookings(accountId: string) {
-    const response = await fetch(`/api/bookings?accountId=${accountId}`, {
-      cache: "no-store",
-    });
+  async function loadBookings() {
+    const response = await fetch("/api/bookings", { cache: "no-store" });
     const data = (await response.json()) as {
       ok: boolean;
       bookings?: BookingRecord[];
@@ -108,16 +101,10 @@ export default function BookingEmbed() {
   }
 
   useEffect(() => {
-    if (!storedAccountId) {
-      return;
-    }
-
     let active = true;
 
     async function loadAccount() {
-      const response = await fetch(`/api/accounts?accountId=${storedAccountId}`, {
-        cache: "no-store",
-      });
+      const response = await fetch("/api/accounts", { cache: "no-store" });
       const data = (await response.json()) as AccountResponse;
 
       if (!active) {
@@ -126,11 +113,12 @@ export default function BookingEmbed() {
 
       if (data.ok) {
         setAccount(data.account);
-        setFirstName(data.account.firstName);
-        setLastName(data.account.lastName);
-        void loadBookings(data.account.id);
-      } else {
-        window.localStorage.removeItem("dojomath-account-id");
+        if (data.account) {
+          setFirstName(data.account.firstName);
+          setLastName(data.account.lastName);
+          setEmail(data.account.email);
+          void loadBookings();
+        }
       }
     }
 
@@ -139,7 +127,7 @@ export default function BookingEmbed() {
     return () => {
       active = false;
     };
-  }, [storedAccountId]);
+  }, []);
 
   function selectPlan(planId: PlanId) {
     setSelectedPlanId(planId);
@@ -148,28 +136,40 @@ export default function BookingEmbed() {
     setDayPage(0);
   }
 
-  async function createAccount() {
+  async function submitAccount() {
     setStatus("loading");
     setMessage("");
 
     const response = await fetch("/api/accounts", {
-      method: "POST",
+      method: authMode === "signup" ? "POST" : "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ firstName, lastName }),
+      body: JSON.stringify({ firstName, lastName, email, password }),
     });
     const data = (await response.json()) as AccountResponse;
 
-    if (!data.ok) {
+    if (!data.ok || !data.account) {
       setStatus("error");
-      setMessage(data.message);
+      setMessage(data.ok ? "Compte introuvable." : data.message);
       return;
     }
 
-    window.localStorage.setItem("dojomath-account-id", data.account.id);
     setAccount(data.account);
-    setBookings([]);
+    void loadBookings();
     setStatus("success");
-    setMessage("Compte créé. Vous pouvez maintenant ajouter des jetons.");
+    setMessage(
+      authMode === "signup"
+        ? "Compte créé. Vous pouvez maintenant ajouter des jetons."
+        : "Connexion réussie.",
+    );
+  }
+
+  async function logout() {
+    await fetch("/api/accounts", { method: "DELETE" });
+    setAccount(null);
+    setBookings([]);
+    setPassword("");
+    setStatus("idle");
+    setMessage("");
   }
 
   async function addTokens(planId: PlanId) {
@@ -185,13 +185,13 @@ export default function BookingEmbed() {
     const response = await fetch("/api/accounts", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accountId: account.id, planId }),
+      body: JSON.stringify({ planId }),
     });
     const data = (await response.json()) as AccountResponse;
 
-    if (!data.ok) {
+    if (!data.ok || !data.account) {
       setStatus("error");
-      setMessage(data.message);
+      setMessage(data.ok ? "Compte introuvable." : data.message);
       return;
     }
 
@@ -214,7 +214,6 @@ export default function BookingEmbed() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        accountId: account.id,
         planId: selectedPlanId,
         date: selectedDate,
         time: selectedSlot,
@@ -242,7 +241,10 @@ export default function BookingEmbed() {
   }
 
   const canCreateAccount =
-    firstName.trim() && lastName.trim() && status !== "loading";
+    email.trim() &&
+    password.trim() &&
+    (authMode === "login" || (firstName.trim() && lastName.trim())) &&
+    status !== "loading";
   const canSubmit =
     account &&
     hasEnoughTokens &&
@@ -269,32 +271,81 @@ export default function BookingEmbed() {
                 Compte DojoMath
               </h2>
               <p className="mt-1 text-sm text-[#645c58]">
-                Créez un compte avec un nom et un prénom.
+                Identifiez-vous avec un email et un mot de passe.
               </p>
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="mb-5 grid grid-cols-2 gap-2 rounded-full border border-[#b88a3b]/25 bg-[#fffaf6] p-1">
+            {(["signup", "login"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => {
+                  setAuthMode(mode);
+                  setMessage("");
+                }}
+                className={`min-h-10 rounded-full px-4 text-sm font-semibold transition ${
+                  authMode === mode
+                    ? "bg-[#6f1022] text-[#fffaf3]"
+                    : "text-[#6f1022] hover:bg-[#fffaf3]"
+                }`}
+              >
+                {mode === "signup" ? "Créer un compte" : "Se connecter"}
+              </button>
+            ))}
+          </div>
+
+          {authMode === "signup" && (
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-[#171313]">
+                  Prénom
+                </span>
+                <input
+                  value={firstName}
+                  onChange={(event) => setFirstName(event.target.value)}
+                  className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
+                  placeholder="Prénom"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-[#171313]">
+                  Nom
+                </span>
+                <input
+                  value={lastName}
+                  onChange={(event) => setLastName(event.target.value)}
+                  className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
+                  placeholder="Nom"
+                />
+              </label>
+            </div>
+          )}
+
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
             <label className="block">
               <span className="mb-2 block text-sm font-semibold text-[#171313]">
-                Prénom
+                Email
               </span>
               <input
-                value={firstName}
-                onChange={(event) => setFirstName(event.target.value)}
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
                 className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
-                placeholder="Prénom"
+                placeholder="parent@email.fr"
               />
             </label>
             <label className="block">
               <span className="mb-2 block text-sm font-semibold text-[#171313]">
-                Nom
+                Mot de passe
               </span>
               <input
-                value={lastName}
-                onChange={(event) => setLastName(event.target.value)}
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
                 className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
-                placeholder="Nom"
+                placeholder="8 caractères minimum"
               />
             </label>
           </div>
@@ -303,11 +354,11 @@ export default function BookingEmbed() {
             <button
               type="button"
               disabled={!canCreateAccount}
-              onClick={createAccount}
+              onClick={submitAccount}
               className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#6f1022] px-6 py-3 text-sm font-semibold text-[#fffaf3] transition hover:scale-[1.02] hover:bg-[#8a1730] disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Check size={18} />
-              {account ? "Créer un autre compte" : "Créer le compte"}
+              {authMode === "signup" ? "Créer le compte" : "Se connecter"}
             </button>
             {account && (
               <div className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#b88a3b]/35 bg-[#fffaf6] px-6 text-sm font-semibold text-[#6f1022]">
@@ -318,9 +369,23 @@ export default function BookingEmbed() {
           </div>
 
           {account && (
-            <p className="mt-4 rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-sm text-[#645c58]">
-              Compte actif : <span className="font-semibold text-[#171313]">{getAccountName(account)}</span>
-            </p>
+            <div className="mt-4 flex flex-col gap-3 rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-sm text-[#645c58] sm:flex-row sm:items-center sm:justify-between">
+              <p>
+                Compte actif :{" "}
+                <span className="font-semibold text-[#171313]">
+                  {getAccountName(account)}
+                </span>
+                <span className="block text-xs text-[#645c58]">{account.email}</span>
+              </p>
+              <button
+                type="button"
+                onClick={logout}
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-[#b88a3b]/35 bg-[#fffaf3] px-4 font-semibold text-[#6f1022] transition hover:border-[#6f1022]"
+              >
+                <LogOut size={16} />
+                Déconnexion
+              </button>
+            </div>
           )}
         </section>
 
