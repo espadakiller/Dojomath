@@ -1,6 +1,6 @@
 const stats = [
   { value: "100%", label: "cours en ligne" },
-  { value: "4", label: "formules disponibles" },
+  { value: "3", label: "formules disponibles" },
   { value: "1h", label: "séance standard" },
   { value: "24/7", label: "réservation en ligne" },
 ];

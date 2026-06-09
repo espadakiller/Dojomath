@@ -36,7 +36,7 @@ function SectionVisual({
             alt={alt}
             width={960}
             height={600}
-            quality={74}
+            quality={75}
             sizes="(min-width: 1024px) 896px, calc(100vw - 40px)"
             className="aspect-[16/9] w-full rounded-[1.5rem] object-cover transition duration-700 group-hover:scale-[1.025]"
           />
@@ -148,8 +148,8 @@ export default function HomePage() {
           <AnimatedSection>
             <SectionTitle
               label="Formules"
-              title="Quatre façons simples de commencer"
-              description="Un cours ponctuel, un rythme mensuel ou une séance intensive pendant les vacances : vous choisissez le format qui correspond à votre besoin."
+              title="Trois façons simples de commencer"
+              description="Un cours ponctuel, un accompagnement mensuel renforcé ou une séance intensive pendant les vacances : vous choisissez le format qui correspond à votre besoin."
             />
           </AnimatedSection>
 
@@ -159,7 +159,7 @@ export default function HomePage() {
             caption="Des formules lisibles, sans détour, pour avancer au bon rythme."
           />
 
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {pricingPlans.map((plan) => (
               <PricingCard
                 key={plan.id}

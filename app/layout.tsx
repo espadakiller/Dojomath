@@ -8,6 +8,13 @@ export const metadata: Metadata = {
   title: "DojoMath | Cours de mathématiques en ligne",
   description:
     "Réserve des cours de mathématiques en ligne avec DojoMath. Progression, méthode et accompagnement personnalisé.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/icon.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
+  },
 };
 
 export default function RootLayout({

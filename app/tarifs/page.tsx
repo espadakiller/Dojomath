@@ -4,7 +4,7 @@ import PricingCard from "@/components/PricingCard";
 import SectionTitle from "@/components/SectionTitle";
 import { comparisonRows, pricingPlans, type PlanId } from "@/lib/pricing";
 
-const planOrder: PlanId[] = ["liberte", "progression", "reussite", "stage"];
+const planOrder: PlanId[] = ["liberte", "progression", "stage"];
 
 export default function TarifsPage() {
   return (
@@ -13,10 +13,10 @@ export default function TarifsPage() {
         <SectionTitle
           label="Tarifs"
           title="Des formules simples et lisibles"
-          description="Compare les accompagnements, puis réserve directement la formule adaptée."
+          description="Compare les trois accompagnements, puis réserve directement la formule adaptée."
         />
 
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {pricingPlans.map((plan) => (
             <PricingCard
               key={plan.id}
@@ -43,7 +43,7 @@ export default function TarifsPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[860px] border-collapse text-left">
+            <table className="w-full min-w-[760px] border-collapse text-left">
               <thead>
                 <tr className="border-b border-[#b88a3b]/20 bg-[#fffaf3] text-sm text-[#645c58]">
                   <th className="w-[28%] px-6 py-5 font-semibold text-[#171313]">
