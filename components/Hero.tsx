@@ -94,16 +94,37 @@ export default function Hero() {
     <section className="relative z-10 overflow-hidden px-6 pt-32 pb-24">
       <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.95fr_1.05fr]">
         <div>
-          <motion.p
-            className="mb-6 text-sm font-medium text-[#6f1022]"
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
+          <motion.div
+            className="relative mb-7 inline-flex max-w-full items-center gap-3 overflow-hidden rounded-full border border-[#b88a3b]/35 bg-[#fffaf3]/84 px-4 py-3 text-[#6f1022] shadow-lg shadow-[#6f1022]/8 backdrop-blur-sm sm:px-5"
+            initial={{ opacity: 0, y: 18, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.55, ease: "easeOut" }}
           >
-            Cours de mathématiques en ligne
-          </motion.p>
+            <motion.span
+              aria-hidden="true"
+              className="absolute inset-y-1 left-0 w-20 rounded-full bg-white/55 blur-lg"
+              animate={{ x: ["-140%", "560%"] }}
+              transition={{
+                duration: 2.8,
+                ease: "easeInOut",
+                repeat: Infinity,
+                repeatDelay: 3.2,
+              }}
+            />
+            <span className="relative flex h-2.5 w-2.5 shrink-0 rounded-full bg-[#6f1022]">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#6f1022]/35" />
+            </span>
+            <span className="relative text-sm font-semibold uppercase leading-none tracking-[0.14em] sm:text-[0.8rem]">
+              Cours particuliers de mathématiques en ligne
+            </span>
+            <span className="relative hidden h-4 w-px bg-[#b88a3b]/45 sm:block" />
+            <span className="relative hidden text-xs font-semibold uppercase leading-none tracking-[0.12em] text-[#5f514b] sm:block">
+              Collège · Lycée · Supérieur
+            </span>
+          </motion.div>
 
           <motion.h1
-            className="max-w-3xl text-5xl font-semibold leading-[1.02] tracking-[-0.055em] text-[#171313] sm:text-6xl lg:text-7xl"
+            className="max-w-3xl text-5xl font-semibold leading-[1.02] tracking-[-0.035em] text-[#171313] sm:text-6xl lg:text-7xl"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}

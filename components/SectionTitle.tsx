@@ -11,11 +11,11 @@ export default function SectionTitle({
 }: SectionTitleProps) {
   return (
     <div className="mx-auto mb-16 max-w-4xl text-center">
-      <p className="mb-5 inline-flex rounded-full border border-[#b88a3b]/35 bg-[#fffaf3]/82 px-5 py-2 text-sm font-semibold uppercase tracking-[0.32em] text-[#6f1022] shadow-sm shadow-[#6f1022]/8 backdrop-blur-sm">
+      <p className="mb-5 inline-flex min-h-11 items-center justify-center rounded-full border border-[#b88a3b]/35 bg-[#fffaf3]/82 px-5 pt-[0.65rem] pb-2 text-sm font-semibold uppercase leading-none tracking-[0.24em] text-[#6f1022] shadow-sm shadow-[#6f1022]/8 backdrop-blur-sm">
         {label}
       </p>
 
-      <h2 className="text-5xl font-semibold leading-[1.02] tracking-[-0.055em] text-[#171313] md:text-7xl">
+      <h2 className="text-5xl font-semibold leading-[1.02] tracking-[-0.035em] text-[#171313] md:text-7xl">
         {title}
       </h2>
 

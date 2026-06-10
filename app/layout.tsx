@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 
 import Navbar from "@/components/Navbar";
@@ -23,8 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr">
-      <body>
+    <html lang="fr" className={GeistSans.variable}>
+      <body className={GeistSans.className}>
         <Navbar />
         <main className="relative z-10">{children}</main>
         <Footer />

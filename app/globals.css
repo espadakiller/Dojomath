@@ -13,14 +13,11 @@ body {
   margin: 0;
   background: #f1e4d1;
   color: #171313;
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "SF Pro Text",
-    "SF Pro Display",
-    "Helvetica Neue",
-    Arial,
-    sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-feature-settings:
+    "ss01" 1,
+    "kern" 1;
+  text-rendering: geometricPrecision;
 }
 
 body::before {
@@ -60,13 +57,7 @@ h1,
 h2,
 h3,
 .logo-font {
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "SF Pro Display",
-    "Helvetica Neue",
-    Arial,
-    sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
 ::selection {
