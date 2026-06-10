@@ -132,6 +132,21 @@ export default function Hero() {
             Un déclic peut tout changer.
           </motion.h1>
 
+          <motion.div
+            className="mt-6 inline-flex max-w-full items-center overflow-hidden rounded-full border border-[#b88a3b]/30 bg-[#fffaf3]/76 text-[#6f1022] shadow-md shadow-[#6f1022]/6 backdrop-blur-sm"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18, duration: 0.5, ease: "easeOut" }}
+          >
+            <span className="px-4 py-3 text-xs font-semibold uppercase leading-none tracking-[0.14em] sm:px-5">
+              Enseignant certifié
+            </span>
+            <span className="h-5 w-px bg-[#b88a3b]/45" />
+            <span className="px-4 py-3 text-xs font-semibold uppercase leading-none tracking-[0.14em] text-[#5f514b] sm:px-5">
+              5+ ans d&apos;expérience
+            </span>
+          </motion.div>
+
           <motion.p
             className="mt-7 max-w-xl rounded-[1.25rem] border border-[#b88a3b]/18 bg-[#fffaf3]/58 px-5 py-4 text-xl leading-8 text-[#554c47] shadow-sm shadow-[#6f1022]/5 backdrop-blur-[2px]"
             initial={{ opacity: 0, y: 24 }}
