@@ -18,6 +18,7 @@ import {
   getCurrentAccount,
   verifyPassword,
 } from "@/lib/local-auth";
+import { sendWelcomeEmail } from "@/lib/email";
 import type { PlanId } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
@@ -111,8 +112,11 @@ export async function POST(request: Request) {
       updatedAt: now,
     }),
   );
+  const publicAccount = toPublicAccount(account);
 
-  return Response.json({ ok: true, account: toPublicAccount(account) }, { status: 201 });
+  await sendWelcomeEmail(publicAccount);
+
+  return Response.json({ ok: true, account: publicAccount }, { status: 201 });
 }
 
 export async function PUT(request: Request) {

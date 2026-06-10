@@ -13,6 +13,7 @@ import {
   type BookingRecord,
   type BookingRequest,
 } from "@/lib/booking";
+import { sendBookingConfirmationEmail } from "@/lib/email";
 import { getCurrentAccount } from "@/lib/local-auth";
 import type { PlanId } from "@/lib/pricing";
 
@@ -132,9 +133,12 @@ export async function POST(request: Request) {
   });
 
   await createBooking(booking);
+  const publicAccount = toPublicAccount(nextAccount);
+
+  await sendBookingConfirmationEmail(publicAccount, booking);
 
   return Response.json(
-    { ok: true, booking, account: toPublicAccount(nextAccount) },
+    { ok: true, booking, account: publicAccount },
     { status: 201 },
   );
 }
