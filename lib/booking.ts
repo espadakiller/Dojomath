@@ -149,7 +149,7 @@ export function getSlotsForPlan(planId: PlanId, dateKey: string) {
   }
 
   if (planId === "stage") {
-    return isSchoolHoliday(dateKey) && (day === 3 || day === 6) ? stageSlots : [];
+    return isSchoolHoliday(dateKey) ? stageSlots : [];
   }
 
   if (day === 6) {

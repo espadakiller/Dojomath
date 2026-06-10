@@ -43,7 +43,7 @@ export const pricingPlans = [
     id: "stage",
     title: "Stage Vacances",
     badge: "Vacances scolaires uniquement",
-    price: "65 €",
+    price: "75 €",
     description:
       "Une séance intensive de 3h uniquement pendant les vacances scolaires.",
     duration: "3h",
