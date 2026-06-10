@@ -24,7 +24,7 @@ export default function TarifsPage() {
               price={plan.price}
               description={plan.description}
               features={[...plan.features]}
-              link={plan.stripeHref}
+              link="/reservation"
               badge={plan.badge}
               highlighted={"highlighted" in plan ? plan.highlighted : false}
               ctaLabel="Réserver"
