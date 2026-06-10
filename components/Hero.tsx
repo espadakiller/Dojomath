@@ -95,7 +95,7 @@ export default function Hero() {
       <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.95fr_1.05fr]">
         <div>
           <motion.div
-            className="relative mb-7 inline-flex max-w-full items-center gap-3 overflow-hidden rounded-full border border-[#b88a3b]/35 bg-[#fffaf3]/84 px-4 py-3 text-[#6f1022] shadow-lg shadow-[#6f1022]/8 backdrop-blur-sm sm:px-5"
+            className="relative mb-7 flex min-h-14 w-full max-w-[34rem] items-center justify-between gap-3 overflow-hidden rounded-full border border-[#b88a3b]/35 bg-[#fffaf3]/84 px-4 py-3 text-[#6f1022] shadow-lg shadow-[#6f1022]/8 backdrop-blur-sm sm:px-5"
             initial={{ opacity: 0, y: 18, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.55, ease: "easeOut" }}
@@ -111,11 +111,13 @@ export default function Hero() {
                 repeatDelay: 3.2,
               }}
             />
-            <span className="relative flex h-2.5 w-2.5 shrink-0 rounded-full bg-[#6f1022]">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#6f1022]/35" />
-            </span>
-            <span className="relative text-sm font-semibold uppercase leading-none tracking-[0.14em] sm:text-[0.8rem]">
-              Cours particuliers de mathématiques en ligne
+            <span className="relative flex min-w-0 items-center gap-3">
+              <span className="relative flex h-2.5 w-2.5 shrink-0 rounded-full bg-[#6f1022]">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#6f1022]/35" />
+              </span>
+              <span className="relative text-sm font-semibold uppercase leading-none tracking-[0.14em] sm:text-[0.8rem]">
+                Cours particuliers de mathématiques en ligne
+              </span>
             </span>
             <span className="relative hidden h-4 w-px bg-[#b88a3b]/45 sm:block" />
             <span className="relative hidden text-xs font-semibold uppercase leading-none tracking-[0.12em] text-[#5f514b] sm:block">
@@ -133,36 +135,45 @@ export default function Hero() {
           </motion.h1>
 
           <motion.div
-            className="mt-6 inline-flex max-w-full items-center overflow-hidden rounded-full border border-[#b88a3b]/30 bg-[#fffaf3]/76 text-[#6f1022] shadow-md shadow-[#6f1022]/6 backdrop-blur-sm"
+            className="mt-6 flex min-h-14 w-full max-w-[34rem] items-center overflow-hidden rounded-full border border-[#b88a3b]/30 bg-[#fffaf3]/76 text-[#6f1022] shadow-md shadow-[#6f1022]/6 backdrop-blur-sm"
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.18, duration: 0.5, ease: "easeOut" }}
           >
-            <span className="px-4 py-3 text-xs font-semibold uppercase leading-none tracking-[0.14em] sm:px-5">
+            <span className="flex flex-1 items-center justify-center gap-2 px-3 py-3 text-center text-[0.68rem] font-semibold uppercase leading-tight tracking-[0.1em] sm:px-5 sm:text-xs sm:tracking-[0.14em]">
+              <motion.span
+                aria-hidden="true"
+                className="h-2 w-2 shrink-0 rounded-full bg-[#6f1022]"
+                animate={{ scale: [1, 1.55, 1], opacity: [0.78, 1, 0.78] }}
+                transition={{
+                  duration: 1.9,
+                  ease: "easeInOut",
+                  repeat: Infinity,
+                }}
+              />
               Enseignant certifié
             </span>
-            <span className="h-5 w-px bg-[#b88a3b]/45" />
-            <span className="px-4 py-3 text-xs font-semibold uppercase leading-none tracking-[0.14em] text-[#5f514b] sm:px-5">
+            <span className="h-5 w-px shrink-0 bg-[#b88a3b]/45" />
+            <span className="flex flex-1 items-center justify-center gap-2 px-3 py-3 text-center text-[0.68rem] font-semibold uppercase leading-tight tracking-[0.1em] text-[#5f514b] sm:px-5 sm:text-xs sm:tracking-[0.14em]">
+              <motion.span
+                aria-hidden="true"
+                className="h-2 w-2 shrink-0 rounded-full border border-[#b88a3b] bg-[#b88a3b]/35"
+                animate={{ rotate: [0, 180, 360], scale: [1, 0.82, 1] }}
+                transition={{
+                  duration: 3,
+                  ease: "linear",
+                  repeat: Infinity,
+                }}
+              />
               5+ ans d&apos;expérience
             </span>
           </motion.div>
 
-          <motion.p
-            className="mt-7 max-w-xl rounded-[1.25rem] border border-[#b88a3b]/18 bg-[#fffaf3]/58 px-5 py-4 text-xl leading-8 text-[#554c47] shadow-sm shadow-[#6f1022]/5 backdrop-blur-[2px]"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            Des cours en ligne dispensés par un enseignant certifié, avec une
-            méthode claire pour comprendre, progresser et préparer chaque
-            échéance sereinement.
-          </motion.p>
-
           <motion.div
-            className="mt-9 flex flex-col gap-4 sm:flex-row"
+            className="mt-8 flex flex-col gap-4 sm:flex-row"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.26 }}
           >
             <Link
               href="/reservation"
