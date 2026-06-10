@@ -62,10 +62,48 @@ export const bookingPlanRules = {
   }
 >;
 
-const weekdaySlots = ["17:00", "18:15", "19:30"];
-const priorityWeekdaySlots = ["16:45", "18:00", "19:15"];
+const weekdaySlots = generateCourseSlots("16:30", "23:00", 65);
 const saturdaySlots = ["09:30", "10:45", "12:00"];
 const stageSlots = ["09:00", "14:00"];
+
+const zoneCSchoolHolidays = [
+  { startsAt: "2025-10-18", endsBefore: "2025-11-03" },
+  { startsAt: "2025-12-20", endsBefore: "2026-01-05" },
+  { startsAt: "2026-02-21", endsBefore: "2026-03-09" },
+  { startsAt: "2026-04-18", endsBefore: "2026-05-04" },
+  { startsAt: "2026-07-04", endsBefore: "2026-09-01" },
+  { startsAt: "2026-10-17", endsBefore: "2026-11-02" },
+  { startsAt: "2026-12-19", endsBefore: "2027-01-04" },
+  { startsAt: "2027-02-06", endsBefore: "2027-02-22" },
+  { startsAt: "2027-04-03", endsBefore: "2027-04-19" },
+  { startsAt: "2027-07-03", endsBefore: "2027-09-01" },
+];
+
+function toMinutes(time: string) {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+function toTimeLabel(totalMinutes: number) {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+function generateCourseSlots(start: string, lastStart: string, stepMinutes: number) {
+  const slots: string[] = [];
+
+  for (
+    let cursor = toMinutes(start);
+    cursor <= toMinutes(lastStart);
+    cursor += stepMinutes
+  ) {
+    slots.push(toTimeLabel(cursor));
+  }
+
+  return slots;
+}
 
 export function toDateKey(date: Date) {
   const year = date.getFullYear();
@@ -75,12 +113,16 @@ export function toDateKey(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
-export function getBookingDays(count = 14) {
+export function getBookingDays(monthsAhead = 2) {
   const days: string[] = [];
   const cursor = new Date();
-  cursor.setHours(0, 0, 0, 0);
+  const endDate = new Date(cursor);
 
-  while (days.length < count) {
+  cursor.setHours(0, 0, 0, 0);
+  endDate.setMonth(endDate.getMonth() + monthsAhead);
+  endDate.setHours(0, 0, 0, 0);
+
+  while (cursor < endDate) {
     cursor.setDate(cursor.getDate() + 1);
     const day = cursor.getDay();
 
@@ -92,6 +134,12 @@ export function getBookingDays(count = 14) {
   return days;
 }
 
+export function isSchoolHoliday(dateKey: string) {
+  return zoneCSchoolHolidays.some(
+    ({ startsAt, endsBefore }) => dateKey >= startsAt && dateKey < endsBefore,
+  );
+}
+
 export function getSlotsForPlan(planId: PlanId, dateKey: string) {
   const date = new Date(`${dateKey}T12:00:00`);
   const day = date.getDay();
@@ -101,14 +149,14 @@ export function getSlotsForPlan(planId: PlanId, dateKey: string) {
   }
 
   if (planId === "stage") {
-    return day === 3 || day === 6 ? stageSlots : [];
+    return isSchoolHoliday(dateKey) && (day === 3 || day === 6) ? stageSlots : [];
   }
 
   if (day === 6) {
     return saturdaySlots;
   }
 
-  return planId === "progression" ? priorityWeekdaySlots : weekdaySlots;
+  return weekdaySlots;
 }
 
 export function formatDateLabel(dateKey: string, variant: "short" | "long") {

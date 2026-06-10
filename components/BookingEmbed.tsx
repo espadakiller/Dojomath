@@ -58,8 +58,10 @@ function getPlan(planId: PlanId) {
   return pricingPlans.find((plan) => plan.id === planId) ?? pricingPlans[0];
 }
 
+const daysPerPage = 12;
+
 export default function BookingEmbed() {
-  const days = useMemo(() => getBookingDays(18), []);
+  const days = useMemo(() => getBookingDays(), []);
   const [account, setAccount] = useState<PublicAccount | null>(null);
   const [authMode, setAuthMode] = useState<"signup" | "login">("signup");
   const [firstName, setFirstName] = useState("");
@@ -85,7 +87,11 @@ export default function BookingEmbed() {
   const selectedPlan = getPlan(selectedPlanId);
   const selectedRule = bookingPlanRules[selectedPlanId];
   const availableSlots = getSlotsForPlan(selectedPlanId, selectedDate);
-  const displayedDays = days.slice(dayPage * 6, dayPage * 6 + 12);
+  const totalDayPages = Math.max(1, Math.ceil(days.length / daysPerPage));
+  const displayedDays = days.slice(
+    dayPage * daysPerPage,
+    dayPage * daysPerPage + daysPerPage,
+  );
   const hasEnoughTokens = (account?.tokens ?? 0) >= selectedRule.durationHours;
 
   async function loadBookings() {
@@ -475,7 +481,8 @@ export default function BookingEmbed() {
                 Calendrier
               </h2>
               <p className="mt-1 text-sm text-[#645c58]">
-                {selectedPlan.title} · {selectedRule.durationHours} jeton
+                Deux mois de disponibilités · {selectedPlan.title} ·{" "}
+                {selectedRule.durationHours} jeton
                 {selectedRule.durationHours > 1 ? "s" : ""}
               </p>
             </div>
@@ -491,10 +498,10 @@ export default function BookingEmbed() {
               </button>
               <button
                 type="button"
-                disabled={dayPage >= Math.ceil(days.length / 6) - 2}
+                disabled={dayPage >= totalDayPages - 1}
                 onClick={() =>
                   setDayPage((current) =>
-                    Math.min(current + 1, Math.ceil(days.length / 6) - 2),
+                    Math.min(current + 1, totalDayPages - 1),
                   )
                 }
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-[#b88a3b]/35 bg-[#fffaf6] text-[#6f1022] disabled:opacity-40"
@@ -539,7 +546,8 @@ export default function BookingEmbed() {
           <div className="mt-6">
             <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#171313]">
               <Clock size={17} />
-              {formatDateLabel(selectedDate, "long")}
+              {formatDateLabel(selectedDate, "long")} · {availableSlots.length}{" "}
+              créneau{availableSlots.length > 1 ? "x" : ""}
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {availableSlots.map((slot) => {
