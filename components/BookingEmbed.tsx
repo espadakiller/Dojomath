@@ -419,14 +419,14 @@ export default function BookingEmbed() {
                   key={plan.id}
                   type="button"
                   onClick={() => selectPlan(plan.id)}
-                  className={`min-h-[178px] rounded-[1.25rem] border p-4 text-left transition hover:-translate-y-1 ${
+                  className={`flex min-h-[210px] flex-col rounded-[1.25rem] border p-4 text-left transition hover:-translate-y-1 ${
                     active
                       ? "border-[#6f1022] bg-[#6f1022] text-[#fffaf3] shadow-lg shadow-[#6f1022]/18"
                       : "border-[#b88a3b]/25 bg-[#fffaf6] text-[#171313] hover:border-[#b88a3b]/70"
                   }`}
                 >
                   <span
-                    className={`mb-3 inline-flex rounded-full border px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] ${
+                    className={`mb-4 flex min-h-11 w-full max-w-[10.75rem] items-center justify-center rounded-full border px-3 py-2 text-center text-[0.68rem] font-semibold uppercase leading-4 tracking-[0.12em] ${
                       active
                         ? "border-[#fffaf3]/30 text-[#f7dfb2]"
                         : "border-[#b88a3b]/35 text-[#6f1022]"
@@ -440,7 +440,7 @@ export default function BookingEmbed() {
                   </span>
                   <span
                     className={`mt-3 block text-sm leading-5 ${
-                      active ? "text-[#fffaf3]/78" : "text-[#645c58]"
+                      active ? "text-[#fffaf3]/82" : "text-[#5b514c]"
                     }`}
                   >
                     Réservation débitée selon la durée du cours.

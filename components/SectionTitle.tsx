@@ -11,7 +11,7 @@ export default function SectionTitle({
 }: SectionTitleProps) {
   return (
     <div className="mx-auto mb-16 max-w-4xl text-center">
-      <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[#6f1022]">
+      <p className="mb-5 inline-flex rounded-full border border-[#b88a3b]/35 bg-[#fffaf3]/82 px-5 py-2 text-sm font-semibold uppercase tracking-[0.32em] text-[#6f1022] shadow-sm shadow-[#6f1022]/8 backdrop-blur-sm">
         {label}
       </p>
 
@@ -20,7 +20,7 @@ export default function SectionTitle({
       </h2>
 
       {description && (
-        <p className="mx-auto mt-6 max-w-2xl text-xl leading-8 text-[#645c58]">
+        <p className="mx-auto mt-6 max-w-2xl rounded-[1.25rem] border border-[#b88a3b]/18 bg-[#fffaf3]/62 px-5 py-4 text-xl leading-8 text-[#554c47] shadow-sm shadow-[#6f1022]/5 backdrop-blur-[2px]">
           {description}
         </p>
       )}

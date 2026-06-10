@@ -112,7 +112,7 @@ export default function Hero() {
           </motion.h1>
 
           <motion.p
-            className="mt-7 max-w-xl text-xl leading-8 text-[#645c58]"
+            className="mt-7 max-w-xl rounded-[1.25rem] border border-[#b88a3b]/18 bg-[#fffaf3]/58 px-5 py-4 text-xl leading-8 text-[#554c47] shadow-sm shadow-[#6f1022]/5 backdrop-blur-[2px]"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
