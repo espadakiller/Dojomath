@@ -72,15 +72,15 @@ export const comparisonRows = [
   },
   {
     label: "Exercices personnalisés",
-    included: { liberte: false, progression: true, stage: true },
+    included: { liberte: true, progression: true, stage: true },
   },
   {
     label: "Bilan aux parents",
-    included: { liberte: false, progression: true, stage: true },
+    included: { liberte: true, progression: true, stage: true },
   },
   {
     label: "Méthode de travail",
-    included: { liberte: false, progression: true, stage: true },
+    included: { liberte: true, progression: true, stage: true },
   },
   {
     label: "Correction entre séances",
