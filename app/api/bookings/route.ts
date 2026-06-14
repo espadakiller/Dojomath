@@ -9,6 +9,7 @@ import {
 } from "@/lib/booking-store";
 import {
   bookingPlanRules,
+  getBookingDays,
   getSlotsForPlan,
   type BookingRecord,
   type BookingRequest,
@@ -16,17 +17,32 @@ import {
 import { sendBookingConfirmationEmail } from "@/lib/email";
 import { getCurrentAccount } from "@/lib/local-auth";
 import type { PlanId } from "@/lib/pricing";
+import {
+  asBoundedText,
+  assertSameOrigin,
+  jsonError,
+  rateLimit,
+  readJsonBody,
+} from "@/lib/security";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-function asText(value: unknown) {
-  return typeof value === "string" ? value.trim() : "";
-}
-
 function isPlanId(value: string): value is PlanId {
   return value in bookingPlanRules;
 }
+
+const allowedLevels = new Set([
+  "6e",
+  "5e",
+  "4e",
+  "3e",
+  "Seconde",
+  "Première",
+  "Terminale",
+  "Supérieur",
+  "Remise à niveau",
+]);
 
 export async function GET() {
   const account = await getCurrentAccount();
@@ -46,55 +62,66 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const originError = assertSameOrigin(request);
+
+  if (originError) {
+    return originError;
+  }
+
+  const limited = rateLimit(request, "bookings:create", 12, 10 * 60 * 1000);
+
+  if (limited) {
+    return limited;
+  }
+
   const account = await getCurrentAccount();
 
   if (!account) {
-    return Response.json(
-      { ok: false, message: "Connectez-vous avant de réserver." },
-      { status: 401 },
-    );
+    return jsonError("Connectez-vous avant de réserver.", 401);
   }
 
-  let payload: Partial<BookingRequest>;
+  const json = await readJsonBody<Partial<BookingRequest>>(
+    request,
+    8_192,
+    "La réservation est illisible.",
+  );
 
-  try {
-    payload = (await request.json()) as Partial<BookingRequest>;
-  } catch {
-    return Response.json(
-      { ok: false, message: "La réservation est illisible." },
-      { status: 400 },
-    );
+  if (!json.ok) {
+    return json.response;
   }
 
-  const planId = asText(payload.planId);
-  const date = asText(payload.date);
-  const time = asText(payload.time);
-  const studentName = asText(payload.studentName);
-  const level = asText(payload.level);
-  const topic = asText(payload.topic);
-  const notes = asText(payload.notes);
+  const planId = asBoundedText(json.data.planId, { max: 40 });
+  const date = asBoundedText(json.data.date, { max: 10 });
+  const time = asBoundedText(json.data.time, { max: 5 });
+  const studentName = asBoundedText(json.data.studentName, { max: 80, min: 1 });
+  const level = asBoundedText(json.data.level, { max: 40, min: 1 });
+  const topic = asBoundedText(json.data.topic, { max: 160, min: 1 });
+  const notes = asBoundedText(json.data.notes, { max: 1_000 });
 
   if (!isPlanId(planId) || !date || !time || !studentName || !level || !topic) {
-    return Response.json(
-      { ok: false, message: "Tous les champs nécessaires sont obligatoires." },
-      { status: 400 },
-    );
+    return jsonError("Tous les champs nécessaires sont obligatoires.", 400);
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
+    return jsonError("Date ou heure invalide.", 400);
+  }
+
+  if (!getBookingDays().includes(date)) {
+    return jsonError("La date demandée n'est pas ouverte à la réservation.", 400);
+  }
+
+  if (!allowedLevels.has(level)) {
+    return jsonError("Niveau invalide.", 400);
   }
 
   if (!getSlotsForPlan(planId, date).includes(time)) {
-    return Response.json(
-      { ok: false, message: "Ce créneau n'est pas disponible pour cette formule." },
-      { status: 400 },
-    );
+    return jsonError("Ce créneau n'est pas disponible pour cette formule.", 400);
   }
 
   const rule = bookingPlanRules[planId];
 
   if (account.tokens < rule.durationHours) {
-    return Response.json(
-      { ok: false, message: "Solde de jetons insuffisant pour ce créneau." },
-      { status: 402 },
-    );
+    return jsonError("Solde de jetons insuffisant pour ce créneau.", 402);
   }
 
   const bookings = await readBookings();
@@ -103,10 +130,7 @@ export async function POST(request: Request) {
   );
 
   if (isTaken) {
-    return Response.json(
-      { ok: false, message: "Ce créneau vient d'être réservé." },
-      { status: 409 },
-    );
+    return jsonError("Ce créneau vient d'être réservé.", 409);
   }
 
   const booking: BookingRecord = {
@@ -132,7 +156,20 @@ export async function POST(request: Request) {
     updatedAt: new Date().toISOString(),
   });
 
-  await createBooking(booking);
+  try {
+    await createBooking(booking);
+  } catch (error) {
+    await upsertAccount({
+      ...account,
+      updatedAt: new Date().toISOString(),
+    });
+    console.error("Booking creation failed after token debit", error);
+    return jsonError(
+      "Ce créneau vient d'être réservé ou la réservation a échoué. Aucun jeton n'a été débité.",
+      409,
+    );
+  }
+
   const publicAccount = toPublicAccount(nextAccount);
 
   await sendBookingConfirmationEmail(publicAccount, booking);

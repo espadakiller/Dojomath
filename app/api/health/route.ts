@@ -1,4 +1,5 @@
 import { selectRows } from "@/lib/supabase-store";
+import { hasValidAdminToken } from "@/lib/security";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -17,7 +18,13 @@ function toSafeError(error: unknown) {
   return "Erreur inconnue.";
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const wantsDetails = new URL(request.url).searchParams.get("details") === "1";
+
+  if (wantsDetails && !hasValidAdminToken(request)) {
+    return Response.json({ ok: false, message: "Non autorisé." }, { status: 401 });
+  }
+
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const hasSupabaseConfig = Boolean(supabaseUrl && supabaseServiceRoleKey);
@@ -43,8 +50,14 @@ export async function GET() {
     }
   }
 
+  const ok = supabase.configured && supabase.urlLooksValid && supabase.reachable;
+
+  if (!wantsDetails) {
+    return Response.json({ ok });
+  }
+
   return Response.json({
-    ok: supabase.configured && supabase.urlLooksValid && supabase.reachable,
+    ok,
     supabase,
     email: {
       configured: Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM),

@@ -1,3 +1,13 @@
+import {
+  asBoundedText,
+  assertSameOrigin,
+  isValidEmail,
+  jsonError,
+  normalizeEmail,
+  rateLimit,
+  readJsonBody,
+} from "@/lib/security";
+
 const recipient = "teogolu@gmail.com";
 const subject = "DOJOMATH CONTACTS";
 
@@ -7,31 +17,39 @@ type ContactPayload = {
   message?: unknown;
 };
 
-function asText(value: unknown) {
-  return typeof value === "string" ? value.trim() : "";
-}
-
 export async function POST(request: Request) {
-  let payload: ContactPayload;
+  const originError = assertSameOrigin(request);
 
-  try {
-    payload = (await request.json()) as ContactPayload;
-  } catch {
-    return Response.json(
-      { ok: false, message: "Le message est illisible." },
-      { status: 400 },
-    );
+  if (originError) {
+    return originError;
   }
 
-  const name = asText(payload.name);
-  const email = asText(payload.email);
-  const message = asText(payload.message);
+  const limited = rateLimit(request, "contact", 5, 10 * 60 * 1000);
+
+  if (limited) {
+    return limited;
+  }
+
+  const json = await readJsonBody<ContactPayload>(
+    request,
+    8_192,
+    "Le message est illisible.",
+  );
+
+  if (!json.ok) {
+    return json.response;
+  }
+
+  const name = asBoundedText(json.data.name, { max: 100, min: 1 });
+  const email = normalizeEmail(json.data.email);
+  const message = asBoundedText(json.data.message, { max: 2_000, min: 1 });
 
   if (!name || !email || !message) {
-    return Response.json(
-      { ok: false, message: "Tous les champs sont obligatoires." },
-      { status: 400 },
-    );
+    return jsonError("Tous les champs sont obligatoires.", 400);
+  }
+
+  if (!isValidEmail(email)) {
+    return jsonError("L'adresse email est invalide.", 400);
   }
 
   const text = [
@@ -61,10 +79,7 @@ export async function POST(request: Request) {
     });
 
     if (!response.ok) {
-      return Response.json(
-        { ok: false, message: "Le mail n'a pas pu être envoyé." },
-        { status: 502 },
-      );
+      return jsonError("Le mail n'a pas pu être envoyé.", 502);
     }
 
     return Response.json({ ok: true, sent: true });

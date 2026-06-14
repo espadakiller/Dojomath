@@ -178,34 +178,6 @@ export default function BookingEmbed() {
     setMessage("");
   }
 
-  async function addTokens(planId: PlanId) {
-    if (!account) {
-      setStatus("error");
-      setMessage("Créez un compte avant d'ajouter des jetons.");
-      return;
-    }
-
-    setStatus("loading");
-    setMessage("");
-
-    const response = await fetch("/api/accounts", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ planId }),
-    });
-    const data = (await response.json()) as AccountResponse;
-
-    if (!data.ok || !data.account) {
-      setStatus("error");
-      setMessage(data.ok ? "Compte introuvable." : data.message);
-      return;
-    }
-
-    setAccount(data.account);
-    setStatus("success");
-    setMessage(data.message ?? "Jetons ajoutés.");
-  }
-
   async function submitBooking() {
     if (!account) {
       setStatus("error");
@@ -460,16 +432,15 @@ export default function BookingEmbed() {
               <CreditCard size={18} />
               Paiement {selectedPlan.title}
             </a>
-            <button
-              type="button"
-              disabled={!account || status === "loading"}
-              onClick={() => addTokens(selectedPlanId)}
-              className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#6f1022] px-6 py-3 text-sm font-semibold text-[#fffaf3] transition hover:scale-[1.02] hover:bg-[#8a1730] disabled:cursor-not-allowed disabled:opacity-50"
-            >
+            <div className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#6f1022] px-6 py-3 text-center text-sm font-semibold text-[#fffaf3]">
               <Coins size={18} />
-              Ajouter les jetons
-            </button>
+              Crédit après validation
+            </div>
           </div>
+          <p className="mt-3 text-sm leading-6 text-[#645c58]">
+            Pour éviter tout abus, les jetons sont crédités après validation du
+            paiement. Utilisez le même email que votre compte DojoMath.
+          </p>
         </section>
       </div>
 
