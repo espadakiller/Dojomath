@@ -1,9 +1,9 @@
 export type PlanId = "liberte" | "progression" | "stage";
 
 const stripeLinks = {
-  liberte: "https://buy.stripe.com/28E3cv5ILch83EO9uX3Je01",
+  liberte: "https://buy.stripe.com/aFa9ATc790yq6R036z3Je05",
   progression: "https://buy.stripe.com/dRmfZh9Z14OG0sC5eH3Je02",
-  stage: "https://buy.stripe.com/dRmbJ1dbd6WO3EOfTl3Je04",
+  stage: "https://buy.stripe.com/8x24gz0or94Wb7gdLd3Je06",
 } satisfies Record<PlanId, string>;
 
 export const pricingPlans = [
