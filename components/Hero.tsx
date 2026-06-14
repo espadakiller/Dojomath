@@ -91,11 +91,11 @@ export default function Hero() {
   const dailyQuote = getDailyQuote();
 
   return (
-    <section className="relative z-10 overflow-hidden px-6 pt-32 pb-24">
-      <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.95fr_1.05fr]">
-        <div>
+    <section className="relative z-10 overflow-hidden px-6 pt-28 pb-20 sm:pt-32 sm:pb-24">
+      <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.95fr_1.05fr]">
+        <div className="mx-auto flex w-full max-w-[36rem] flex-col items-start lg:mx-0 lg:-translate-y-6">
           <motion.div
-            className="relative mb-7 flex min-h-14 w-full max-w-[34rem] items-center justify-between gap-3 overflow-hidden rounded-full border border-[#b88a3b]/35 bg-[#fffaf3]/84 px-4 py-3 text-[#6f1022] shadow-lg shadow-[#6f1022]/8 backdrop-blur-sm sm:px-5"
+            className="relative mb-6 inline-flex min-h-11 max-w-full items-center gap-3 overflow-hidden rounded-full border border-[#b88a3b]/30 bg-[#fffaf3]/82 px-4 py-2.5 text-[#6f1022] shadow-md shadow-[#6f1022]/6 backdrop-blur-sm sm:px-5"
             initial={{ opacity: 0, y: 18, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.55, ease: "easeOut" }}
@@ -119,14 +119,10 @@ export default function Hero() {
                 Cours particuliers de mathématiques en ligne
               </span>
             </span>
-            <span className="relative hidden h-4 w-px bg-[#b88a3b]/45 sm:block" />
-            <span className="relative hidden text-xs font-semibold uppercase leading-none tracking-[0.12em] text-[#5f514b] sm:block">
-              Collège · Lycée · Supérieur
-            </span>
           </motion.div>
 
           <motion.h1
-            className="max-w-3xl text-5xl font-semibold leading-[1.02] tracking-[-0.035em] text-[#171313] sm:text-6xl lg:text-7xl"
+            className="max-w-[34rem] text-5xl font-semibold leading-[0.98] tracking-[-0.04em] text-[#171313] sm:text-6xl lg:text-7xl"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -135,16 +131,16 @@ export default function Hero() {
           </motion.h1>
 
           <motion.div
-            className="mt-6 flex min-h-14 w-full max-w-[34rem] items-center overflow-hidden rounded-full border border-[#b88a3b]/30 bg-[#fffaf3]/76 text-[#6f1022] shadow-md shadow-[#6f1022]/6 backdrop-blur-sm"
+            className="mt-6 flex max-w-full flex-wrap items-center gap-x-5 gap-y-3 text-[#6f1022]"
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.18, duration: 0.5, ease: "easeOut" }}
           >
-            <span className="flex flex-1 items-center justify-center gap-2 px-3 py-3 text-center text-[0.68rem] font-semibold uppercase leading-tight tracking-[0.1em] sm:px-5 sm:text-xs sm:tracking-[0.14em]">
+            <span className="flex items-center gap-2 text-xs font-semibold uppercase leading-none tracking-[0.14em]">
               <motion.span
                 aria-hidden="true"
-                className="h-2 w-2 shrink-0 rounded-full bg-[#6f1022]"
-                animate={{ scale: [1, 1.55, 1], opacity: [0.78, 1, 0.78] }}
+                className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#6f1022]"
+                animate={{ scale: [1, 1.45, 1], opacity: [0.72, 1, 0.72] }}
                 transition={{
                   duration: 1.9,
                   ease: "easeInOut",
@@ -153,11 +149,11 @@ export default function Hero() {
               />
               Enseignant certifié
             </span>
-            <span className="h-5 w-px shrink-0 bg-[#b88a3b]/45" />
-            <span className="flex flex-1 items-center justify-center gap-2 px-3 py-3 text-center text-[0.68rem] font-semibold uppercase leading-tight tracking-[0.1em] text-[#5f514b] sm:px-5 sm:text-xs sm:tracking-[0.14em]">
+            <span className="hidden h-4 w-px shrink-0 bg-[#b88a3b]/45 sm:block" />
+            <span className="flex items-center gap-2 text-xs font-semibold uppercase leading-none tracking-[0.14em] text-[#5f514b]">
               <motion.span
                 aria-hidden="true"
-                className="h-2 w-2 shrink-0 rounded-full border border-[#b88a3b] bg-[#b88a3b]/35"
+                className="h-2.5 w-2.5 shrink-0 rounded-full border border-[#b88a3b] bg-[#b88a3b]/35"
                 animate={{ rotate: [0, 180, 360], scale: [1, 0.82, 1] }}
                 transition={{
                   duration: 3,
@@ -170,21 +166,21 @@ export default function Hero() {
           </motion.div>
 
           <motion.div
-            className="mt-8 flex flex-col gap-4 sm:flex-row"
+            className="mt-9 flex w-full max-w-[29rem] flex-col gap-4 sm:flex-row"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.26 }}
           >
             <Link
               href="/reservation"
-              className="rounded-full bg-[#6f1022] px-7 py-4 text-center text-sm font-semibold text-[#fffaf3] shadow-lg shadow-[#6f1022]/15 transition hover:scale-[1.03] hover:bg-[#8a1730]"
+              className="flex min-h-14 items-center justify-center rounded-full bg-[#6f1022] px-7 py-4 text-center text-sm font-semibold text-[#fffaf3] shadow-lg shadow-[#6f1022]/15 transition hover:scale-[1.03] hover:bg-[#8a1730]"
             >
               Réserver un cours
             </Link>
 
             <Link
               href="/tarifs"
-              className="rounded-full border border-[#b88a3b]/35 bg-[#fffaf3] px-7 py-4 text-center text-sm font-semibold text-[#171313] transition hover:scale-[1.03] hover:border-[#b88a3b] hover:text-[#6f1022]"
+              className="flex min-h-14 items-center justify-center rounded-full border border-[#b88a3b]/35 bg-[#fffaf3] px-7 py-4 text-center text-sm font-semibold text-[#171313] transition hover:scale-[1.03] hover:border-[#b88a3b] hover:text-[#6f1022]"
             >
               Voir les tarifs
             </Link>
