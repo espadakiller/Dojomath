@@ -83,6 +83,10 @@ export default function BookingEmbed() {
     "idle",
   );
   const [message, setMessage] = useState("");
+  const [authNotice, setAuthNotice] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const selectedPlan = getPlan(selectedPlanId);
   const selectedRule = bookingPlanRules[selectedPlanId];
@@ -145,6 +149,7 @@ export default function BookingEmbed() {
   async function submitAccount() {
     setStatus("loading");
     setMessage("");
+    setAuthNotice(null);
 
     const response = await fetch("/api/accounts", {
       method: authMode === "signup" ? "POST" : "PUT",
@@ -156,17 +161,25 @@ export default function BookingEmbed() {
     if (!data.ok || !data.account) {
       setStatus("error");
       setMessage(data.ok ? "Compte introuvable." : data.message);
+      setAuthNotice({
+        type: "error",
+        message: data.ok ? "Compte introuvable." : data.message,
+      });
       return;
     }
 
     setAccount(data.account);
     void loadBookings();
     setStatus("success");
-    setMessage(
-      authMode === "signup"
-        ? "Compte créé. Vous pouvez maintenant ajouter des jetons."
-        : "Connexion réussie.",
-    );
+    setAuthNotice({
+      type: "success",
+      message:
+        data.message ??
+        (authMode === "signup"
+          ? "Compte créé. Un email de confirmation vient d'être envoyé."
+          : "Connexion réussie. Vous êtes bien connecté."),
+    });
+    setMessage("");
   }
 
   async function logout() {
@@ -176,6 +189,7 @@ export default function BookingEmbed() {
     setPassword("");
     setStatus("idle");
     setMessage("");
+    setAuthNotice(null);
   }
 
   async function submitBooking() {
@@ -254,116 +268,160 @@ export default function BookingEmbed() {
             </div>
           </div>
 
-          <div className="mb-5 grid grid-cols-2 gap-2 rounded-full border border-[#b88a3b]/25 bg-[#fffaf6] p-1">
-            {(["signup", "login"] as const).map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => {
-                  setAuthMode(mode);
-                  setMessage("");
-                }}
-                className={`min-h-10 rounded-full px-4 text-sm font-semibold transition ${
-                  authMode === mode
-                    ? "bg-[#6f1022] text-[#fffaf3]"
-                    : "text-[#6f1022] hover:bg-[#fffaf3]"
-                }`}
-              >
-                {mode === "signup" ? "Créer un compte" : "Se connecter"}
-              </button>
-            ))}
-          </div>
-
-          {authMode === "signup" && (
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-[#171313]">
-                  Prénom
-                </span>
-                <input
-                  value={firstName}
-                  onChange={(event) => setFirstName(event.target.value)}
-                  className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
-                  placeholder="Prénom"
-                />
-              </label>
-              <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-[#171313]">
-                  Nom
-                </span>
-                <input
-                  value={lastName}
-                  onChange={(event) => setLastName(event.target.value)}
-                  className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
-                  placeholder="Nom"
-                />
-              </label>
-            </div>
-          )}
-
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <label className="block">
-              <span className="mb-2 block text-sm font-semibold text-[#171313]">
-                Email
-              </span>
-              <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
-                placeholder="parent@email.fr"
-              />
-            </label>
-            <label className="block">
-              <span className="mb-2 block text-sm font-semibold text-[#171313]">
-                Mot de passe
-              </span>
-              <input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
-                placeholder="8 caractères minimum"
-              />
-            </label>
-          </div>
-
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-            <button
-              type="button"
-              disabled={!canCreateAccount}
-              onClick={submitAccount}
-              className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#6f1022] px-6 py-3 text-sm font-semibold text-[#fffaf3] transition hover:scale-[1.02] hover:bg-[#8a1730] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <Check size={18} />
-              {authMode === "signup" ? "Créer le compte" : "Se connecter"}
-            </button>
-            {account && (
-              <div className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#b88a3b]/35 bg-[#fffaf6] px-6 text-sm font-semibold text-[#6f1022]">
-                <Coins size={18} />
-                {account.tokens} jeton{account.tokens > 1 ? "s" : ""}
-              </div>
-            )}
-          </div>
-
           {account && (
-            <div className="mt-4 flex flex-col gap-3 rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-sm text-[#645c58] sm:flex-row sm:items-center sm:justify-between">
-              <p>
-                Compte actif :{" "}
-                <span className="font-semibold text-[#171313]">
-                  {getAccountName(account)}
-                </span>
-                <span className="block text-xs text-[#645c58]">{account.email}</span>
-              </p>
+            <div className="rounded-[1.35rem] border border-[#245447]/20 bg-[#f4fbf7] p-5 text-[#171313] shadow-sm shadow-[#245447]/8">
+              <div className="mb-4 inline-flex min-h-9 items-center gap-2 rounded-full bg-[#245447] px-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#fffaf3]">
+                <Check size={16} />
+                Connecté
+              </div>
+              <h3 className="text-2xl font-semibold tracking-[-0.04em]">
+                {getAccountName(account)}
+              </h3>
+              <p className="mt-1 text-sm text-[#645c58]">{account.email}</p>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-[#245447]/15 bg-white/70 px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#245447]">
+                    Solde
+                  </p>
+                  <p className="mt-1 text-lg font-semibold text-[#171313]">
+                    {account.tokens} jeton{account.tokens > 1 ? "s" : ""}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-[#245447]/15 bg-white/70 px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#245447]">
+                    Statut
+                  </p>
+                  <p className="mt-1 text-lg font-semibold text-[#171313]">
+                    Session active
+                  </p>
+                </div>
+              </div>
+
+              {authNotice && (
+                <p
+                  className={`mt-4 rounded-xl border px-4 py-3 text-sm font-semibold ${
+                    authNotice.type === "error"
+                      ? "border-[#d14f72]/25 bg-[#fffaf6] text-[#6f1022]"
+                      : "border-[#245447]/20 bg-white/70 text-[#245447]"
+                  }`}
+                >
+                  {authNotice.message}
+                </p>
+              )}
+
               <button
                 type="button"
                 onClick={logout}
-                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-[#b88a3b]/35 bg-[#fffaf3] px-4 font-semibold text-[#6f1022] transition hover:border-[#6f1022]"
+                className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#245447]/25 bg-white/70 px-5 text-sm font-semibold text-[#245447] transition hover:border-[#245447]"
               >
                 <LogOut size={16} />
                 Déconnexion
               </button>
             </div>
+          )}
+
+          {!account && (
+            <>
+              <div className="mb-5 grid grid-cols-2 gap-2 rounded-full border border-[#b88a3b]/25 bg-[#fffaf6] p-1">
+                {(["signup", "login"] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => {
+                      setAuthMode(mode);
+                      setMessage("");
+                      setAuthNotice(null);
+                    }}
+                    className={`min-h-10 rounded-full px-4 text-sm font-semibold transition ${
+                      authMode === mode
+                        ? "bg-[#6f1022] text-[#fffaf3]"
+                        : "text-[#6f1022] hover:bg-[#fffaf3]"
+                    }`}
+                  >
+                    {mode === "signup" ? "Créer un compte" : "Se connecter"}
+                  </button>
+                ))}
+              </div>
+
+              {authMode === "signup" && (
+                <div className="grid gap-4 md:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-[#171313]">
+                      Prénom
+                    </span>
+                    <input
+                      value={firstName}
+                      onChange={(event) => setFirstName(event.target.value)}
+                      className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
+                      placeholder="Prénom"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-[#171313]">
+                      Nom
+                    </span>
+                    <input
+                      value={lastName}
+                      onChange={(event) => setLastName(event.target.value)}
+                      className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
+                      placeholder="Nom"
+                    />
+                  </label>
+                </div>
+              )}
+
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-[#171313]">
+                    Email
+                  </span>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
+                    placeholder="parent@email.fr"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-[#171313]">
+                    Mot de passe
+                  </span>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
+                    placeholder="8 caractères minimum"
+                  />
+                </label>
+              </div>
+
+              {authNotice && (
+                <p
+                  className={`mt-4 rounded-xl border px-4 py-3 text-sm font-semibold ${
+                    authNotice.type === "error"
+                      ? "border-[#d14f72]/25 bg-[#fffaf6] text-[#6f1022]"
+                      : "border-[#245447]/20 bg-[#f4fbf7] text-[#245447]"
+                  }`}
+                >
+                  {authNotice.message}
+                </p>
+              )}
+
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                <button
+                  type="button"
+                  disabled={!canCreateAccount}
+                  onClick={submitAccount}
+                  className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#6f1022] px-6 py-3 text-sm font-semibold text-[#fffaf3] transition hover:scale-[1.02] hover:bg-[#8a1730] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Check size={18} />
+                  {authMode === "signup" ? "Créer le compte" : "Se connecter"}
+                </button>
+              </div>
+            </>
           )}
         </section>
 

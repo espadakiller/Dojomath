@@ -111,9 +111,18 @@ export async function POST(request: Request) {
   );
   const publicAccount = toPublicAccount(account);
 
-  await sendWelcomeEmail(publicAccount);
+  const emailResult = await sendWelcomeEmail(publicAccount);
 
-  return Response.json({ ok: true, account: publicAccount }, { status: 201 });
+  return Response.json(
+    {
+      ok: true,
+      account: publicAccount,
+      message: emailResult.ok
+        ? "Compte créé. Un email de confirmation vient d'être envoyé."
+        : "Compte créé. L'email de confirmation n'a pas pu être envoyé automatiquement.",
+    },
+    { status: 201 },
+  );
 }
 
 export async function PUT(request: Request) {
@@ -158,7 +167,11 @@ export async function PUT(request: Request) {
 
   const nextAccount = await createSession(account);
 
-  return Response.json({ ok: true, account: toPublicAccount(nextAccount) });
+  return Response.json({
+    ok: true,
+    account: toPublicAccount(nextAccount),
+    message: "Connexion réussie. Vous êtes bien connecté.",
+  });
 }
 
 export async function PATCH(request: Request) {
