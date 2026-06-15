@@ -15,6 +15,7 @@ export type BookingRecord = {
   level: string;
   topic: string;
   notes: string;
+  videoUrl?: string;
   status: BookingStatus;
   createdAt: string;
 };
@@ -25,6 +26,7 @@ export type BookingRequest = Omit<
   | "planTitle"
   | "durationHours"
   | "customerName"
+  | "videoUrl"
   | "status"
   | "createdAt"
 >;

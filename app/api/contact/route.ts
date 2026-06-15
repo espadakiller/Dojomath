@@ -8,7 +8,7 @@ import {
   readJsonBody,
 } from "@/lib/security";
 
-const recipient = "teogolu@gmail.com";
+const recipient = process.env.CONTACT_TO_EMAIL ?? "mkkurban9@gmail.com";
 const subject = "DOJOMATH CONTACTS";
 
 type ContactPayload = {
@@ -70,7 +70,10 @@ export async function POST(request: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: process.env.CONTACT_FROM_EMAIL ?? "DojoMath <onboarding@resend.dev>",
+        from:
+          process.env.CONTACT_FROM_EMAIL ??
+          process.env.EMAIL_FROM ??
+          "DojoMath <onboarding@resend.dev>",
         to: [recipient],
         subject,
         text,

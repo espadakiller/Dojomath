@@ -116,12 +116,25 @@ export function sendBookingConfirmationEmail(
   booking: BookingRecord,
 ) {
   const dateLabel = formatDate(booking.date);
+  const videoText = booking.videoUrl
+    ? ` Lien visio Google Meet: ${booking.videoUrl}.`
+    : "";
+  const videoHtml = booking.videoUrl
+    ? `
+        <p style="margin:22px 0 0;">
+          <a href="${escapeHtml(booking.videoUrl)}" style="display:inline-block;background:#7a1028;color:#ffffff;text-decoration:none;border-radius:999px;padding:12px 18px;font-weight:bold;">Rejoindre la visio Google Meet</a>
+        </p>
+        <p style="margin:12px 0 0;color:#666;font-size:14px;">Ce lien est aussi disponible dans votre espace de r&eacute;servation DojoMath.</p>
+      `
+    : `
+        <p style="margin:20px 0 0;color:#666;">Le lien visio vous sera transmis avant le cours.</p>
+      `;
 
   return safelySendEmail({
     to: account.email,
     subject: "Reservation confirmee - DojoMath",
     idempotencyKey: `booking-${booking.id}`,
-    text: `Bonjour ${account.firstName}, votre reservation DojoMath est bien enregistree pour le ${dateLabel} a ${booking.time}. Eleve: ${booking.studentName}. Niveau: ${booking.level}. Objectif: ${booking.topic}.`,
+    text: `Bonjour ${account.firstName}, votre reservation DojoMath est bien enregistree pour le ${dateLabel} a ${booking.time}. Eleve: ${booking.studentName}. Niveau: ${booking.level}. Objectif: ${booking.topic}.${videoText}`,
     html: baseTemplate(
       "Reservation confirmee",
       `
@@ -137,7 +150,7 @@ export function sendBookingConfirmationEmail(
             <tr><td style="padding:8px 0;color:#666;">Objectif</td><td style="padding:8px 0;text-align:right;"><strong>${escapeHtml(booking.topic)}</strong></td></tr>
           </tbody>
         </table>
-        <p>Vous recevrez les informations pratiques du cours si un lien ou une precision supplementaire est necessaire.</p>
+        ${videoHtml}
       `,
     ),
   });

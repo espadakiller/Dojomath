@@ -711,6 +711,17 @@ export default function BookingEmbed() {
                 <p className="mt-3 text-sm font-medium text-[#171313]">
                   {booking.topic}
                 </p>
+                {booking.videoUrl && (
+                  <a
+                    href={booking.videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full bg-[#6f1022] px-4 text-sm font-semibold text-[#fffaf3] transition hover:scale-[1.02] hover:bg-[#8a1730]"
+                  >
+                    <Video size={16} />
+                    Rejoindre la visio
+                  </a>
+                )}
               </article>
             ))}
           </div>

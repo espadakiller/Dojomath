@@ -10,6 +10,7 @@ type RateLimitEntry = {
 };
 
 const rateLimitStore = new Map<string, RateLimitEntry>();
+const localHostnames = new Set(["localhost", "127.0.0.1", "::1"]);
 
 export function jsonError(message: string, status: number) {
   return Response.json({ ok: false, message }, { status });
@@ -52,10 +53,12 @@ export function assertSameOrigin(request: Request) {
     return null;
   }
 
+  const requestUrl = new URL(request.url);
   const host =
     request.headers.get("x-forwarded-host") ?? request.headers.get("host");
-  const proto = request.headers.get("x-forwarded-proto") ?? "https";
-  const requestOrigin = new URL(request.url).origin;
+  const proto =
+    request.headers.get("x-forwarded-proto") ?? requestUrl.protocol.replace(":", "");
+  const requestOrigin = requestUrl.origin;
   const allowedOrigins = new Set(
     [
       requestOrigin,
@@ -66,6 +69,22 @@ export function assertSameOrigin(request: Request) {
         : null,
     ].filter(Boolean) as string[],
   );
+
+  if (process.env.NODE_ENV !== "production") {
+    try {
+      const originUrl = new URL(origin);
+      const hostUrl = new URL(`${proto}://${host ?? requestUrl.host}`);
+
+      if (
+        localHostnames.has(originUrl.hostname) &&
+        localHostnames.has(hostUrl.hostname)
+      ) {
+        return null;
+      }
+    } catch {
+      return jsonError("Origine de requete non autorisee.", 403);
+    }
+  }
 
   if (!allowedOrigins.has(origin)) {
     return jsonError("Origine de requete non autorisee.", 403);

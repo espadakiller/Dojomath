@@ -16,6 +16,7 @@ import {
 } from "@/lib/booking";
 import { sendBookingConfirmationEmail } from "@/lib/email";
 import { getCurrentAccount } from "@/lib/local-auth";
+import { getBookingMeetLink } from "@/lib/meeting";
 import type { PlanId } from "@/lib/pricing";
 import {
   asBoundedText,
@@ -146,6 +147,7 @@ export async function POST(request: Request) {
     level,
     topic,
     notes,
+    videoUrl: getBookingMeetLink(),
     status: "pending",
     createdAt: new Date().toISOString(),
   };
