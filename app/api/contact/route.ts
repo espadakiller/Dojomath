@@ -9,6 +9,7 @@ import {
 } from "@/lib/security";
 
 const recipient = process.env.CONTACT_TO_EMAIL ?? "mkkurban9@gmail.com";
+const sender = process.env.CONTACT_FROM_EMAIL ?? "DojoMath <onboarding@resend.dev>";
 const subject = "DOJOMATH CONTACTS";
 
 type ContactPayload = {
@@ -59,6 +60,9 @@ export async function POST(request: Request) {
     "Message :",
     message,
   ].join("\n");
+  const mailto = `mailto:${recipient}?subject=${encodeURIComponent(
+    subject,
+  )}&body=${encodeURIComponent(text)}`;
 
   const apiKey = process.env.RESEND_API_KEY;
 
@@ -70,10 +74,7 @@ export async function POST(request: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from:
-          process.env.CONTACT_FROM_EMAIL ??
-          process.env.EMAIL_FROM ??
-          "DojoMath <onboarding@resend.dev>",
+        from: sender,
         to: [recipient],
         subject,
         text,
@@ -82,15 +83,20 @@ export async function POST(request: Request) {
     });
 
     if (!response.ok) {
-      return jsonError("Le mail n'a pas pu être envoyé.", 502);
+      const resendMessage = await response.text();
+      console.error("DojoMath contact email failed", resendMessage);
+
+      return Response.json({
+        ok: true,
+        sent: false,
+        mailto,
+        message:
+          "L'envoi automatique est indisponible. Votre application mail va s'ouvrir avec le message prérempli.",
+      });
     }
 
     return Response.json({ ok: true, sent: true });
   }
-
-  const mailto = `mailto:${recipient}?subject=${encodeURIComponent(
-    subject,
-  )}&body=${encodeURIComponent(text)}`;
 
   return Response.json({ ok: true, sent: false, mailto });
 }

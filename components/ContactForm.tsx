@@ -50,7 +50,9 @@ export default function ContactForm() {
       window.location.href = result.mailto;
       setStatus({
         type: "success",
-        message: "Ton application mail va s'ouvrir avec le message prérempli.",
+        message:
+          result.message ??
+          "Votre application mail va s'ouvrir avec le message prérempli.",
       });
       return;
     }
