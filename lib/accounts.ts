@@ -9,6 +9,7 @@ export type AccountRecord = {
   passwordSalt: string;
   sessionTokenHash?: string;
   sessionExpiresAt?: string;
+  stripeEventIds?: string[];
   tokens: number;
   createdAt: string;
   updatedAt: string;

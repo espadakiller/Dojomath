@@ -71,3 +71,22 @@ export async function createBooking(booking: BookingRecord) {
   await writeLocalBookings([booking, ...bookings]);
   return booking;
 }
+
+export async function updateBooking(booking: BookingRecord) {
+  if (hasSupabaseStorage) {
+    await upsertRow("dojomath_bookings", {
+      id: booking.id,
+      account_id: booking.accountId,
+      date: booking.date,
+      time: booking.time,
+      data: booking,
+    });
+    return booking;
+  }
+
+  const bookings = await readLocalBookings();
+  await writeLocalBookings(
+    bookings.map((current) => (current.id === booking.id ? booking : current)),
+  );
+  return booking;
+}

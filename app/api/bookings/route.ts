@@ -6,6 +6,7 @@ import {
   createBooking,
   readBookings,
   readBookingsByAccount,
+  updateBooking,
 } from "@/lib/booking-store";
 import {
   bookingPlanRules,
@@ -14,7 +15,11 @@ import {
   type BookingRecord,
   type BookingRequest,
 } from "@/lib/booking";
-import { sendBookingConfirmationEmail } from "@/lib/email";
+import {
+  sendBookingChangeRequestEmail,
+  sendBookingConfirmationEmail,
+  sendTeacherBookingEmail,
+} from "@/lib/email";
 import { getCurrentAccount } from "@/lib/local-auth";
 import { getBookingMeetLink } from "@/lib/meeting";
 import type { PlanId } from "@/lib/pricing";
@@ -127,7 +132,10 @@ export async function POST(request: Request) {
 
   const bookings = await readBookings();
   const isTaken = bookings.some(
-    (booking) => booking.date === date && booking.time === time,
+    (booking) =>
+      booking.date === date &&
+      booking.time === time &&
+      booking.status !== "cancelled",
   );
 
   if (isTaken) {
@@ -175,9 +183,70 @@ export async function POST(request: Request) {
   const publicAccount = toPublicAccount(nextAccount);
 
   await sendBookingConfirmationEmail(publicAccount, booking);
+  await sendTeacherBookingEmail(publicAccount, booking);
 
   return Response.json(
     { ok: true, booking, account: publicAccount },
     { status: 201 },
   );
+}
+
+export async function PATCH(request: Request) {
+  const originError = assertSameOrigin(request);
+
+  if (originError) {
+    return originError;
+  }
+
+  const limited = rateLimit(request, "bookings:update", 20, 10 * 60 * 1000);
+
+  if (limited) {
+    return limited;
+  }
+
+  const account = await getCurrentAccount();
+
+  if (!account) {
+    return jsonError("Connectez-vous avant de modifier une reservation.", 401);
+  }
+
+  const json = await readJsonBody<{
+    bookingId?: unknown;
+    action?: unknown;
+    message?: unknown;
+  }>(request, 4_096, "La demande est illisible.");
+
+  if (!json.ok) {
+    return json.response;
+  }
+
+  const bookingId = asBoundedText(json.data.bookingId, { max: 120, min: 1 });
+  const action = asBoundedText(json.data.action, { max: 30, min: 1 });
+  const message = asBoundedText(json.data.message, { max: 800, min: 3 });
+
+  if (!bookingId || !["cancel", "reschedule"].includes(action) || !message) {
+    return jsonError("Demande incomplete.", 400);
+  }
+
+  const bookings = await readBookingsByAccount(account.id);
+  const booking = bookings.find((current) => current.id === bookingId);
+
+  if (!booking) {
+    return jsonError("Reservation introuvable.", 404);
+  }
+
+  const nextBooking: BookingRecord = {
+    ...booking,
+    status: action === "cancel" ? "cancel_requested" : "reschedule_requested",
+    changeRequest: {
+      type: action === "cancel" ? "cancel" : "reschedule",
+      message,
+      createdAt: new Date().toISOString(),
+    },
+  };
+
+  await updateBooking(nextBooking);
+  await sendBookingChangeRequestEmail(toPublicAccount(account), nextBooking);
+
+  return Response.json({ ok: true, booking: nextBooking });
 }

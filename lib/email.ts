@@ -1,5 +1,6 @@
 import type { PublicAccount } from "@/lib/accounts";
 import type { BookingRecord } from "@/lib/booking";
+import type { PlanId } from "@/lib/pricing";
 
 type EmailPayload = {
   to: string;
@@ -11,6 +12,10 @@ type EmailPayload = {
 
 const resendApiKey = process.env.RESEND_API_KEY;
 const emailFrom = process.env.EMAIL_FROM;
+const teacherEmail =
+  process.env.TEACHER_EMAIL ??
+  process.env.CONTACT_TO_EMAIL ??
+  "mkkurban9@gmail.com";
 
 function escapeHtml(value: string) {
   return value
@@ -150,6 +155,151 @@ export function sendBookingConfirmationEmail(
             <tr><td style="padding:8px 0;color:#666;">Objectif</td><td style="padding:8px 0;text-align:right;"><strong>${escapeHtml(booking.topic)}</strong></td></tr>
           </tbody>
         </table>
+        ${videoHtml}
+      `,
+    ),
+  });
+}
+
+export function sendTeacherBookingEmail(
+  account: PublicAccount,
+  booking: BookingRecord,
+) {
+  const dateLabel = formatDate(booking.date);
+  const videoLine = booking.videoUrl ? `\nLien visio: ${booking.videoUrl}` : "";
+
+  return safelySendEmail({
+    to: teacherEmail,
+    subject: `Nouvelle reservation DojoMath - ${dateLabel} ${booking.time}`,
+    idempotencyKey: `teacher-booking-${booking.id}`,
+    text: [
+      "Nouvelle reservation DojoMath",
+      "",
+      `Parent: ${account.firstName} ${account.lastName}`,
+      `Email: ${account.email}`,
+      `Formule: ${booking.planTitle}`,
+      `Date: ${dateLabel}`,
+      `Heure: ${booking.time}`,
+      `Eleve: ${booking.studentName}`,
+      `Niveau: ${booking.level}`,
+      `Objectif: ${booking.topic}`,
+      `Notes: ${booking.notes || "-"}`,
+      videoLine,
+    ].join("\n"),
+    html: baseTemplate(
+      "Nouvelle reservation",
+      `
+        <p><strong>Parent :</strong> ${escapeHtml(account.firstName)} ${escapeHtml(account.lastName)}<br />
+        <strong>Email :</strong> ${escapeHtml(account.email)}</p>
+        <table style="width:100%;border-collapse:collapse;margin:20px 0;">
+          <tbody>
+            <tr><td style="padding:8px 0;color:#666;">Formule</td><td style="padding:8px 0;text-align:right;"><strong>${escapeHtml(booking.planTitle)}</strong></td></tr>
+            <tr><td style="padding:8px 0;color:#666;">Date</td><td style="padding:8px 0;text-align:right;"><strong>${escapeHtml(dateLabel)}</strong></td></tr>
+            <tr><td style="padding:8px 0;color:#666;">Heure</td><td style="padding:8px 0;text-align:right;"><strong>${escapeHtml(booking.time)}</strong></td></tr>
+            <tr><td style="padding:8px 0;color:#666;">Eleve</td><td style="padding:8px 0;text-align:right;"><strong>${escapeHtml(booking.studentName)}</strong></td></tr>
+            <tr><td style="padding:8px 0;color:#666;">Niveau</td><td style="padding:8px 0;text-align:right;"><strong>${escapeHtml(booking.level)}</strong></td></tr>
+          </tbody>
+        </table>
+        <p><strong>Objectif :</strong> ${escapeHtml(booking.topic)}</p>
+        <p><strong>Notes :</strong> ${escapeHtml(booking.notes || "-")}</p>
+        ${
+          booking.videoUrl
+            ? `<p><a href="${escapeHtml(booking.videoUrl)}">Ouvrir la visio</a></p>`
+            : ""
+        }
+      `,
+    ),
+  });
+}
+
+export function sendPaymentCreditsEmail(
+  account: PublicAccount,
+  details: { planId: PlanId; label: string; tokens: number; eventId: string },
+) {
+  return safelySendEmail({
+    to: account.email,
+    subject: "Jetons ajoutes - DojoMath",
+    idempotencyKey: `credits-${account.id}-${details.eventId}`,
+    text: `Bonjour ${account.firstName}, votre paiement a ete confirme. ${details.label} ont ete ajoutes a votre compte DojoMath. Nouveau solde: ${account.tokens} jeton(s).`,
+    html: baseTemplate(
+      "Jetons ajoutes",
+      `
+        <p>Bonjour ${escapeHtml(account.firstName)},</p>
+        <p>Votre paiement a bien &eacute;t&eacute; confirm&eacute;. <strong>${escapeHtml(details.label)}</strong> ont &eacute;t&eacute; ajout&eacute;s &agrave; votre compte.</p>
+        <p style="margin:20px 0 0;"><strong>Nouveau solde :</strong> ${account.tokens} jeton${account.tokens > 1 ? "s" : ""}</p>
+      `,
+    ),
+  });
+}
+
+export function sendBookingChangeRequestEmail(
+  account: PublicAccount,
+  booking: BookingRecord,
+) {
+  const dateLabel = formatDate(booking.date);
+  const request = booking.changeRequest;
+
+  if (!request) {
+    return Promise.resolve({ ok: false, skipped: true });
+  }
+
+  return safelySendEmail({
+    to: teacherEmail,
+    subject:
+      request.type === "cancel"
+        ? `Demande d'annulation - ${dateLabel} ${booking.time}`
+        : `Demande de deplacement - ${dateLabel} ${booking.time}`,
+    idempotencyKey: `booking-change-${booking.id}-${request.createdAt}`,
+    text: [
+      request.type === "cancel"
+        ? "Demande d'annulation"
+        : "Demande de deplacement",
+      "",
+      `Parent: ${account.firstName} ${account.lastName}`,
+      `Email: ${account.email}`,
+      `Cours: ${dateLabel} a ${booking.time}`,
+      `Eleve: ${booking.studentName}`,
+      "",
+      "Message:",
+      request.message,
+    ].join("\n"),
+    html: baseTemplate(
+      request.type === "cancel"
+        ? "Demande d'annulation"
+        : "Demande de deplacement",
+      `
+        <p><strong>Parent :</strong> ${escapeHtml(account.firstName)} ${escapeHtml(account.lastName)}<br />
+        <strong>Email :</strong> ${escapeHtml(account.email)}</p>
+        <p><strong>Cours :</strong> ${escapeHtml(dateLabel)} &agrave; ${escapeHtml(booking.time)}<br />
+        <strong>Eleve :</strong> ${escapeHtml(booking.studentName)}</p>
+        <p><strong>Message :</strong><br />${escapeHtml(request.message)}</p>
+      `,
+    ),
+  });
+}
+
+export function sendBookingReminderEmail(
+  account: PublicAccount,
+  booking: BookingRecord,
+) {
+  const dateLabel = formatDate(booking.date);
+  const videoText = booking.videoUrl
+    ? ` Lien visio: ${booking.videoUrl}.`
+    : "";
+  const videoHtml = booking.videoUrl
+    ? `<p style="margin:22px 0 0;"><a href="${escapeHtml(booking.videoUrl)}" style="display:inline-block;background:#7a1028;color:#ffffff;text-decoration:none;border-radius:999px;padding:12px 18px;font-weight:bold;">Rejoindre la visio</a></p>`
+    : "";
+
+  return safelySendEmail({
+    to: account.email,
+    subject: "Rappel de cours - DojoMath",
+    idempotencyKey: `booking-reminder-${booking.id}`,
+    text: `Bonjour ${account.firstName}, rappel: votre cours DojoMath est prevu le ${dateLabel} a ${booking.time}.${videoText}`,
+    html: baseTemplate(
+      "Rappel de cours",
+      `
+        <p>Bonjour ${escapeHtml(account.firstName)},</p>
+        <p>Petit rappel : votre cours DojoMath est pr&eacute;vu le <strong>${escapeHtml(dateLabel)}</strong> &agrave; <strong>${escapeHtml(booking.time)}</strong>.</p>
         ${videoHtml}
       `,
     ),

@@ -1,6 +1,17 @@
 import type { PlanId } from "@/lib/pricing";
 
-export type BookingStatus = "pending" | "confirmed";
+export type BookingStatus =
+  | "pending"
+  | "confirmed"
+  | "reschedule_requested"
+  | "cancel_requested"
+  | "cancelled";
+
+export type BookingChangeRequest = {
+  type: "reschedule" | "cancel";
+  message: string;
+  createdAt: string;
+};
 
 export type BookingRecord = {
   id: string;
@@ -16,6 +27,8 @@ export type BookingRecord = {
   topic: string;
   notes: string;
   videoUrl?: string;
+  changeRequest?: BookingChangeRequest;
+  reminderSentAt?: string;
   status: BookingStatus;
   createdAt: string;
 };
@@ -27,6 +40,8 @@ export type BookingRequest = Omit<
   | "durationHours"
   | "customerName"
   | "videoUrl"
+  | "changeRequest"
+  | "reminderSentAt"
   | "status"
   | "createdAt"
 >;

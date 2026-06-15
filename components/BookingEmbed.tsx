@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  BadgeCheck,
   CalendarDays,
   Check,
   ChevronLeft,
@@ -10,8 +11,11 @@ import {
   Coins,
   CreditCard,
   LogOut,
+  RefreshCw,
+  ShieldCheck,
   User,
   Video,
+  XCircle,
 } from "lucide-react";
 
 import { getAccountName, type PublicAccount } from "@/lib/accounts";
@@ -50,12 +54,35 @@ type BookingResponse =
   | { ok: true; booking: BookingRecord; account: PublicAccount }
   | { ok: false; message: string };
 
+type ChangeBookingResponse =
+  | { ok: true; booking: BookingRecord }
+  | { ok: false; message: string };
+
 function firstAvailableDate(planId: PlanId, days: string[]) {
   return days.find((day) => getSlotsForPlan(planId, day).length > 0) ?? days[0];
 }
 
 function getPlan(planId: PlanId) {
   return pricingPlans.find((plan) => plan.id === planId) ?? pricingPlans[0];
+}
+
+function getPaymentHref(planHref: string, account: PublicAccount, planId: PlanId) {
+  const url = new URL(planHref);
+  url.searchParams.set("client_reference_id", `${account.id}_${planId}`);
+  url.searchParams.set("prefilled_email", account.email);
+  return url.toString();
+}
+
+function getBookingStatusLabel(status: BookingRecord["status"]) {
+  const labels = {
+    pending: "En attente",
+    confirmed: "Confirmée",
+    reschedule_requested: "Déplacement demandé",
+    cancel_requested: "Annulation demandée",
+    cancelled: "Annulée",
+  } satisfies Record<BookingRecord["status"], string>;
+
+  return labels[status];
 }
 
 const daysPerPage = 12;
@@ -87,6 +114,11 @@ export default function BookingEmbed() {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [changeStatus, setChangeStatus] = useState<{
+    bookingId: string;
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
   const selectedPlan = getPlan(selectedPlanId);
   const selectedRule = bookingPlanRules[selectedPlanId];
@@ -97,6 +129,18 @@ export default function BookingEmbed() {
     dayPage * daysPerPage + daysPerPage,
   );
   const hasEnoughTokens = (account?.tokens ?? 0) >= selectedRule.durationHours;
+  const paymentHref = account
+    ? getPaymentHref(selectedPlan.stripeHref, account, selectedPlanId)
+    : "";
+  const progressSteps = [
+    { label: "Compte", done: Boolean(account) },
+    { label: "Jetons", done: hasEnoughTokens },
+    { label: "Créneau", done: Boolean(selectedSlot) },
+    {
+      label: "Infos",
+      done: Boolean(studentName.trim() && level && topic.trim()),
+    },
+  ];
 
   async function loadBookings() {
     const response = await fetch("/api/bookings", { cache: "no-store" });
@@ -232,6 +276,54 @@ export default function BookingEmbed() {
     setNotes("");
   }
 
+  async function requestBookingChange(
+    bookingId: string,
+    action: "cancel" | "reschedule",
+  ) {
+    const promptMessage =
+      action === "cancel"
+        ? "Expliquez brièvement la raison de l'annulation."
+        : "Indiquez les nouveaux créneaux souhaités.";
+    const requestMessage = window.prompt(promptMessage);
+
+    if (!requestMessage?.trim()) {
+      return;
+    }
+
+    setChangeStatus(null);
+
+    const response = await fetch("/api/bookings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        bookingId,
+        action,
+        message: requestMessage,
+      }),
+    });
+    const data = (await response.json()) as ChangeBookingResponse;
+
+    if (!data.ok) {
+      setChangeStatus({
+        bookingId,
+        type: "error",
+        message: data.message,
+      });
+      return;
+    }
+
+    setBookings((current) =>
+      current.map((booking) =>
+        booking.id === data.booking.id ? data.booking : booking,
+      ),
+    );
+    setChangeStatus({
+      bookingId,
+      type: "success",
+      message: "Demande envoyée. Elle sera traitée rapidement.",
+    });
+  }
+
   const canCreateAccount =
     email.trim() &&
     password.trim() &&
@@ -247,11 +339,47 @@ export default function BookingEmbed() {
     status !== "loading";
   const isSlotTaken = (time: string) =>
     bookings.some(
-      (booking) => booking.date === selectedDate && booking.time === time,
+      (booking) =>
+        booking.date === selectedDate &&
+        booking.time === time &&
+        booking.status !== "cancelled",
     );
 
   return (
     <div className="glass mx-auto max-w-7xl rounded-[2rem] p-4 shadow-xl shadow-[#6f1022]/8 md:p-8">
+      <div className="mb-6 grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+        <div className="grid gap-2 sm:grid-cols-4">
+          {progressSteps.map((step, index) => (
+            <div
+              key={step.label}
+              className={`flex min-h-12 items-center gap-3 rounded-full border px-4 text-sm font-semibold ${
+                step.done
+                  ? "border-[#245447]/20 bg-[#f4fbf7] text-[#245447]"
+                  : "border-[#b88a3b]/25 bg-[#fffaf6] text-[#645c58]"
+              }`}
+            >
+              <span
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs ${
+                  step.done
+                    ? "bg-[#245447] text-[#fffaf3]"
+                    : "bg-[#f1e5d5] text-[#6f1022]"
+                }`}
+              >
+                {step.done ? <Check size={15} /> : index + 1}
+              </span>
+              {step.label}
+            </div>
+          ))}
+        </div>
+        {account && (
+          <div className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#6f1022] px-5 text-sm font-semibold text-[#fffaf3] shadow-md shadow-[#6f1022]/15">
+            <BadgeCheck size={17} />
+            {account.tokens} jeton{account.tokens > 1 ? "s" : ""} disponible
+            {account.tokens > 1 ? "s" : ""}
+          </div>
+        )}
+      </div>
+
       <div className="mb-8 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
         <section className="rounded-[1.5rem] border border-[#b88a3b]/25 bg-[#fffaf3] p-5 md:p-6">
           <div className="mb-5 flex items-center gap-3">
@@ -481,23 +609,34 @@ export default function BookingEmbed() {
           </div>
 
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-            <a
-              href={selectedPlan.stripeHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full border border-[#b88a3b]/40 bg-[#fffaf6] px-6 py-3 text-sm font-semibold text-[#6f1022] transition hover:scale-[1.02] hover:border-[#6f1022]"
-            >
-              <CreditCard size={18} />
-              Paiement {selectedPlan.title}
-            </a>
+            {account ? (
+              <a
+                href={paymentHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full border border-[#b88a3b]/40 bg-[#fffaf6] px-6 py-3 text-sm font-semibold text-[#6f1022] transition hover:scale-[1.02] hover:border-[#6f1022]"
+              >
+                <CreditCard size={18} />
+                Paiement {selectedPlan.title}
+              </a>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full border border-[#b88a3b]/25 bg-[#fffaf6] px-6 py-3 text-sm font-semibold text-[#645c58] opacity-70"
+              >
+                <ShieldCheck size={18} />
+                Connectez-vous pour payer
+              </button>
+            )}
             <div className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#6f1022] px-6 py-3 text-center text-sm font-semibold text-[#fffaf3]">
               <Coins size={18} />
-              Crédit après validation
+              Crédit automatique après paiement
             </div>
           </div>
           <p className="mt-3 text-sm leading-6 text-[#645c58]">
-            Pour éviter tout abus, les jetons sont crédités après validation du
-            paiement. Utilisez le même email que votre compte DojoMath.
+            Le paiement est lié au compte connecté. Dès que Stripe confirme le
+            règlement, les jetons sont ajoutés automatiquement.
           </p>
         </section>
       </div>
@@ -755,7 +894,7 @@ export default function BookingEmbed() {
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <p className="font-semibold text-[#171313]">{booking.planTitle}</p>
                   <span className="rounded-full bg-[#6f1022] px-3 py-1 text-xs font-semibold text-[#fffaf3]">
-                    En attente
+                    {getBookingStatusLabel(booking.status)}
                   </span>
                 </div>
                 <p className="flex items-center gap-2 text-sm text-[#645c58]">
@@ -769,6 +908,39 @@ export default function BookingEmbed() {
                 <p className="mt-3 text-sm font-medium text-[#171313]">
                   {booking.topic}
                 </p>
+                {changeStatus?.bookingId === booking.id && (
+                  <p
+                    className={`mt-3 rounded-xl border px-3 py-2 text-xs font-semibold ${
+                      changeStatus.type === "error"
+                        ? "border-[#d14f72]/25 bg-white text-[#6f1022]"
+                        : "border-[#245447]/20 bg-[#f4fbf7] text-[#245447]"
+                    }`}
+                  >
+                    {changeStatus.message}
+                  </p>
+                )}
+                {!["cancel_requested", "reschedule_requested", "cancelled"].includes(
+                  booking.status,
+                ) && (
+                  <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => requestBookingChange(booking.id, "reschedule")}
+                      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-[#b88a3b]/35 bg-white px-3 text-xs font-semibold text-[#6f1022] transition hover:border-[#6f1022]"
+                    >
+                      <RefreshCw size={14} />
+                      Déplacer
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => requestBookingChange(booking.id, "cancel")}
+                      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-[#b88a3b]/35 bg-white px-3 text-xs font-semibold text-[#6f1022] transition hover:border-[#6f1022]"
+                    >
+                      <XCircle size={14} />
+                      Annuler
+                    </button>
+                  </div>
+                )}
                 {booking.videoUrl && (
                   <a
                     href={booking.videoUrl}
