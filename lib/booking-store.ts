@@ -3,6 +3,7 @@ import path from "node:path";
 
 import type { BookingRecord } from "@/lib/booking";
 import {
+  deleteRows,
   hasSupabaseStorage,
   selectRows,
   upsertRow,
@@ -89,4 +90,16 @@ export async function updateBooking(booking: BookingRecord) {
     bookings.map((current) => (current.id === booking.id ? booking : current)),
   );
   return booking;
+}
+
+export async function deleteBookingsByAccount(accountId: string) {
+  if (hasSupabaseStorage) {
+    await deleteRows("dojomath_bookings", { account_id: `eq.${accountId}` });
+    return;
+  }
+
+  const bookings = await readLocalBookings();
+  await writeLocalBookings(
+    bookings.filter((booking) => booking.accountId !== accountId),
+  );
 }

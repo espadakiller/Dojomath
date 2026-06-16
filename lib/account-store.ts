@@ -3,6 +3,7 @@ import path from "node:path";
 
 import type { AccountRecord } from "@/lib/accounts";
 import {
+  deleteRows,
   hasSupabaseStorage,
   selectRows,
   upsertRow,
@@ -104,4 +105,14 @@ export async function upsertAccount(account: AccountRecord) {
 
   await writeAccounts(nextAccounts);
   return account;
+}
+
+export async function deleteAccount(accountId: string) {
+  if (hasSupabaseStorage) {
+    await deleteRows("dojomath_accounts", { id: `eq.${accountId}` });
+    return;
+  }
+
+  const accounts = await readAccounts();
+  await writeAccounts(accounts.filter((account) => account.id !== accountId));
 }

@@ -1,10 +1,16 @@
 import {
+  deleteAccount,
+  findAccount,
   findAccountByEmail,
   readAccounts,
   upsertAccount,
 } from "@/lib/account-store";
 import { tokenPacks, toPublicAccount } from "@/lib/accounts";
-import { readBookings, updateBooking } from "@/lib/booking-store";
+import {
+  deleteBookingsByAccount,
+  readBookings,
+  updateBooking,
+} from "@/lib/booking-store";
 import type { BookingStatus } from "@/lib/booking";
 import type { PlanId } from "@/lib/pricing";
 import {
@@ -70,6 +76,7 @@ export async function PATCH(request: Request) {
     action?: unknown;
     email?: unknown;
     planId?: unknown;
+    accountId?: unknown;
     bookingId?: unknown;
     status?: unknown;
   }>(request, 4_096, "La demande admin est illisible.");
@@ -129,6 +136,28 @@ export async function PATCH(request: Request) {
     });
 
     return Response.json({ ok: true, booking: nextBooking });
+  }
+
+  if (action === "delete_account") {
+    const accountId = asBoundedText(json.data.accountId, { max: 120, min: 1 });
+
+    if (!accountId) {
+      return jsonError("Compte invalide.", 400);
+    }
+
+    const account = await findAccount(accountId);
+
+    if (!account) {
+      return jsonError("Compte introuvable.", 404);
+    }
+
+    await deleteBookingsByAccount(account.id);
+    await deleteAccount(account.id);
+
+    return Response.json({
+      ok: true,
+      deletedAccountId: account.id,
+    });
   }
 
   return jsonError("Action admin inconnue.", 400);

@@ -1,7 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CalendarDays, Coins, RefreshCw, ShieldCheck, UserRound } from "lucide-react";
+import {
+  CalendarDays,
+  Coins,
+  RefreshCw,
+  ShieldCheck,
+  Trash2,
+  UserRound,
+} from "lucide-react";
 
 import type { PublicAccount } from "@/lib/accounts";
 import type { BookingRecord, BookingStatus } from "@/lib/booking";
@@ -131,6 +138,35 @@ export default function AdminDashboard() {
     await loadAdminData();
   }
 
+  async function deleteAccountById(account: PublicAccount) {
+    const confirmed = window.confirm(
+      `Supprimer le compte ${account.email} et ses réservations ?`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setLoading(true);
+    setMessage("");
+    const result = await api<{ ok: true } | AdminError>({
+      method: "PATCH",
+      body: JSON.stringify({
+        action: "delete_account",
+        accountId: account.id,
+      }),
+    });
+    setLoading(false);
+
+    if (!result.ok) {
+      setMessage(result.message);
+      return;
+    }
+
+    setMessage("Compte supprimé.");
+    await loadAdminData();
+  }
+
   return (
     <div className="mx-auto max-w-7xl">
       <section className="glass rounded-[2rem] p-5 shadow-xl shadow-[#6f1022]/8 md:p-8">
@@ -245,6 +281,15 @@ export default function AdminDashboard() {
                   <p className="mt-2 text-sm font-semibold text-[#6f1022]">
                     {account.tokens} jeton{account.tokens > 1 ? "s" : ""}
                   </p>
+                  <button
+                    type="button"
+                    onClick={() => deleteAccountById(account)}
+                    disabled={loading}
+                    className="mt-4 inline-flex min-h-9 items-center justify-center gap-2 rounded-full border border-[#d14f72]/25 bg-white px-4 text-xs font-semibold text-[#6f1022] transition hover:border-[#6f1022] disabled:opacity-50"
+                  >
+                    <Trash2 size={14} />
+                    Supprimer
+                  </button>
                 </article>
               ))}
             </div>

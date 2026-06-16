@@ -80,3 +80,19 @@ export async function upsertRow<T extends Record<string, unknown>>(
     { on_conflict: conflictColumn },
   );
 }
+
+export async function deleteRows(
+  table: string,
+  params: Record<string, QueryValue>,
+) {
+  await request<null>(
+    table,
+    {
+      method: "DELETE",
+      headers: {
+        Prefer: "return=minimal",
+      },
+    },
+    params,
+  );
+}
