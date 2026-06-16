@@ -58,6 +58,12 @@ type ChangeBookingResponse =
   | { ok: true; booking: BookingRecord }
   | { ok: false; message: string };
 
+type OccupiedSlot = {
+  id: string;
+  date: string;
+  time: string;
+};
+
 function firstAvailableDate(planId: PlanId, days: string[]) {
   return days.find((day) => getSlotsForPlan(planId, day).length > 0) ?? days[0];
 }
@@ -106,6 +112,10 @@ export default function BookingEmbed() {
   const [topic, setTopic] = useState("");
   const [notes, setNotes] = useState("");
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
+  const [occupiedSlots, setOccupiedSlots] = useState<OccupiedSlot[]>([]);
+  const [reschedulingBookingId, setReschedulingBookingId] = useState<
+    string | null
+  >(null);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
     "idle",
   );
@@ -122,6 +132,8 @@ export default function BookingEmbed() {
 
   const selectedPlan = getPlan(selectedPlanId);
   const selectedRule = bookingPlanRules[selectedPlanId];
+  const reschedulingBooking =
+    bookings.find((booking) => booking.id === reschedulingBookingId) ?? null;
   const availableSlots = getSlotsForPlan(selectedPlanId, selectedDate);
   const totalDayPages = Math.max(1, Math.ceil(days.length / daysPerPage));
   const displayedDays = days.slice(
@@ -147,10 +159,12 @@ export default function BookingEmbed() {
     const data = (await response.json()) as {
       ok: boolean;
       bookings?: BookingRecord[];
+      occupiedSlots?: OccupiedSlot[];
     };
 
     if (data.ok) {
       setBookings(data.bookings ?? []);
+      setOccupiedSlots(data.occupiedSlots ?? []);
     }
   }
 
@@ -269,6 +283,10 @@ export default function BookingEmbed() {
 
     setAccount(data.account);
     setBookings((current) => [data.booking, ...current]);
+    setOccupiedSlots((current) => [
+      { id: data.booking.id, date: data.booking.date, time: data.booking.time },
+      ...current,
+    ]);
     setStatus("success");
     setMessage("Créneau réservé. Les jetons ont été débités du compte.");
     setSelectedSlot("");
@@ -276,15 +294,71 @@ export default function BookingEmbed() {
     setNotes("");
   }
 
+  function startReschedule(booking: BookingRecord) {
+    setSelectedPlanId(booking.planId);
+    setSelectedDate(booking.date);
+    setSelectedSlot("");
+    setDayPage(
+      Math.max(0, Math.floor(days.indexOf(booking.date) / daysPerPage)),
+    );
+    setReschedulingBookingId(booking.id);
+    setChangeStatus(null);
+    setMessage(
+      "Choisissez un nouveau créneau disponible dans le calendrier, puis confirmez le déplacement.",
+    );
+  }
+
+  async function submitReschedule() {
+    if (!reschedulingBooking || !selectedSlot) {
+      setStatus("error");
+      setMessage("Choisissez un nouveau créneau pour déplacer le cours.");
+      return;
+    }
+
+    setStatus("loading");
+    setMessage("");
+    setChangeStatus(null);
+
+    const response = await fetch("/api/bookings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        bookingId: reschedulingBooking.id,
+        action: "reschedule",
+        date: selectedDate,
+        time: selectedSlot,
+      }),
+    });
+    const data = (await response.json()) as ChangeBookingResponse;
+
+    if (!data.ok) {
+      setStatus("error");
+      setMessage(data.message);
+      return;
+    }
+
+    setBookings((current) =>
+      current.map((booking) =>
+        booking.id === data.booking.id ? data.booking : booking,
+      ),
+    );
+    setOccupiedSlots((current) => [
+      { id: data.booking.id, date: data.booking.date, time: data.booking.time },
+      ...current.filter((slot) => slot.id !== data.booking.id),
+    ]);
+    setReschedulingBookingId(null);
+    setSelectedSlot("");
+    setStatus("success");
+    setMessage("Cours déplacé. Le nouveau créneau est bien réservé.");
+  }
+
   async function requestBookingChange(
     bookingId: string,
-    action: "cancel" | "reschedule",
+    action: "cancel",
   ) {
-    const promptMessage =
-      action === "cancel"
-        ? "Expliquez brièvement la raison de l'annulation."
-        : "Indiquez les nouveaux créneaux souhaités.";
-    const requestMessage = window.prompt(promptMessage);
+    const requestMessage = window.prompt(
+      "Expliquez brièvement la raison de l'annulation.",
+    );
 
     if (!requestMessage?.trim()) {
       return;
@@ -331,18 +405,26 @@ export default function BookingEmbed() {
     status !== "loading";
   const canSubmit =
     account &&
+    !reschedulingBooking &&
     hasEnoughTokens &&
     selectedSlot &&
     studentName.trim() &&
     level &&
     topic.trim() &&
     status !== "loading";
+  const canReschedule = Boolean(
+    reschedulingBooking &&
+    selectedSlot &&
+    status !== "loading" &&
+    (selectedDate !== reschedulingBooking.date ||
+      selectedSlot !== reschedulingBooking.time),
+  );
   const isSlotTaken = (time: string) =>
-    bookings.some(
-      (booking) =>
-        booking.date === selectedDate &&
-        booking.time === time &&
-        booking.status !== "cancelled",
+    occupiedSlots.some(
+      (slot) =>
+        slot.id !== reschedulingBookingId &&
+        slot.date === selectedDate &&
+        slot.time === time,
     );
 
   return (
@@ -576,12 +658,13 @@ export default function BookingEmbed() {
                 <button
                   key={plan.id}
                   type="button"
+                  disabled={Boolean(reschedulingBooking)}
                   onClick={() => selectPlan(plan.id)}
                   className={`flex min-h-[210px] flex-col rounded-[1.25rem] border p-4 text-left transition hover:-translate-y-1 ${
                     active
                       ? "border-[#6f1022] bg-[#6f1022] text-[#fffaf3] shadow-lg shadow-[#6f1022]/18"
                       : "border-[#b88a3b]/25 bg-[#fffaf6] text-[#171313] hover:border-[#b88a3b]/70"
-                  }`}
+                  } disabled:cursor-not-allowed disabled:opacity-70`}
                 >
                   <span
                     className={`mb-4 flex min-h-11 w-full max-w-[10.75rem] items-center justify-center rounded-full border px-3 py-2 text-center text-[0.68rem] font-semibold uppercase leading-4 tracking-[0.12em] ${
@@ -760,6 +843,31 @@ export default function BookingEmbed() {
             </div>
           </div>
 
+          {reschedulingBooking && (
+            <div className="mb-5 rounded-[1.15rem] border border-[#245447]/20 bg-[#f4fbf7] p-4">
+              <p className="text-sm font-semibold text-[#245447]">
+                Déplacement en cours
+              </p>
+              <p className="mt-1 text-sm leading-6 text-[#645c58]">
+                Cours de {reschedulingBooking.studentName} prévu le{" "}
+                {formatDateLabel(reschedulingBooking.date, "long")} à{" "}
+                {reschedulingBooking.time}. Choisissez un nouveau créneau libre
+                dans le calendrier.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setReschedulingBookingId(null);
+                  setSelectedSlot("");
+                  setMessage("");
+                }}
+                className="mt-3 inline-flex min-h-9 items-center justify-center rounded-full border border-[#245447]/25 bg-white px-4 text-xs font-semibold text-[#245447]"
+              >
+                Annuler le déplacement
+              </button>
+            </div>
+          )}
+
           <div className="mb-5 grid gap-3 sm:grid-cols-3">
             <div className="rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6f1022]">
@@ -853,18 +961,22 @@ export default function BookingEmbed() {
 
           <button
             type="button"
-            disabled={!canSubmit}
-            onClick={submitBooking}
+            disabled={reschedulingBooking ? !canReschedule : !canSubmit}
+            onClick={reschedulingBooking ? submitReschedule : submitBooking}
             className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#6f1022] px-6 py-3 text-sm font-semibold text-[#fffaf3] transition hover:scale-[1.02] hover:bg-[#8a1730] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Check size={18} />
             {status === "loading"
-              ? "Réservation..."
-              : !account
-                ? "Compte requis"
-                : !hasEnoughTokens
-                  ? "Jetons insuffisants"
-                  : "Confirmer le créneau"}
+              ? reschedulingBooking
+                ? "Déplacement..."
+                : "Réservation..."
+              : reschedulingBooking
+                ? "Confirmer le déplacement"
+                : !account
+                  ? "Compte requis"
+                  : !hasEnoughTokens
+                    ? "Jetons insuffisants"
+                    : "Confirmer le créneau"}
           </button>
         </section>
       </div>
@@ -925,7 +1037,7 @@ export default function BookingEmbed() {
                   <div className="mt-4 grid gap-2 sm:grid-cols-2">
                     <button
                       type="button"
-                      onClick={() => requestBookingChange(booking.id, "reschedule")}
+                      onClick={() => startReschedule(booking)}
                       className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-[#b88a3b]/35 bg-white px-3 text-xs font-semibold text-[#6f1022] transition hover:border-[#6f1022]"
                     >
                       <RefreshCw size={14} />

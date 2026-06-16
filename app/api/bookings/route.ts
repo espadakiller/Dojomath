@@ -60,10 +60,21 @@ export async function GET() {
     );
   }
 
-  const bookings = await readBookingsByAccount(account.id);
+  const [bookings, allBookings] = await Promise.all([
+    readBookingsByAccount(account.id),
+    readBookings(),
+  ]);
+
   return Response.json({
     ok: true,
     bookings,
+    occupiedSlots: allBookings
+      .filter((booking) => booking.status !== "cancelled")
+      .map((booking) => ({
+        id: booking.id,
+        date: booking.date,
+        time: booking.time,
+      })),
   });
 }
 
@@ -214,6 +225,8 @@ export async function PATCH(request: Request) {
     bookingId?: unknown;
     action?: unknown;
     message?: unknown;
+    date?: unknown;
+    time?: unknown;
   }>(request, 4_096, "La demande est illisible.");
 
   if (!json.ok) {
@@ -222,9 +235,8 @@ export async function PATCH(request: Request) {
 
   const bookingId = asBoundedText(json.data.bookingId, { max: 120, min: 1 });
   const action = asBoundedText(json.data.action, { max: 30, min: 1 });
-  const message = asBoundedText(json.data.message, { max: 800, min: 3 });
 
-  if (!bookingId || !["cancel", "reschedule"].includes(action) || !message) {
+  if (!bookingId || !["cancel", "reschedule"].includes(action)) {
     return jsonError("Demande incomplete.", 400);
   }
 
@@ -235,11 +247,62 @@ export async function PATCH(request: Request) {
     return jsonError("Reservation introuvable.", 404);
   }
 
+  if (action === "reschedule") {
+    const date = asBoundedText(json.data.date, { max: 10 });
+    const time = asBoundedText(json.data.time, { max: 5 });
+
+    if (!date || !time) {
+      return jsonError("Choisissez un nouveau creneau.", 400);
+    }
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
+      return jsonError("Date ou heure invalide.", 400);
+    }
+
+    if (!getBookingDays().includes(date)) {
+      return jsonError("La date demandee n'est pas ouverte a la reservation.", 400);
+    }
+
+    if (!getSlotsForPlan(booking.planId, date).includes(time)) {
+      return jsonError("Ce creneau n'est pas disponible pour cette formule.", 400);
+    }
+
+    const allBookings = await readBookings();
+    const isTaken = allBookings.some(
+      (current) =>
+        current.id !== booking.id &&
+        current.date === date &&
+        current.time === time &&
+        current.status !== "cancelled",
+    );
+
+    if (isTaken) {
+      return jsonError("Ce creneau vient d'etre reserve.", 409);
+    }
+
+    const nextBooking: BookingRecord = {
+      ...booking,
+      date,
+      time,
+      changeRequest: undefined,
+    };
+
+    await updateBooking(nextBooking);
+
+    return Response.json({ ok: true, booking: nextBooking });
+  }
+
+  const message = asBoundedText(json.data.message, { max: 800, min: 3 });
+
+  if (!message) {
+    return jsonError("Expliquez brievement votre demande.", 400);
+  }
+
   const nextBooking: BookingRecord = {
     ...booking,
-    status: action === "cancel" ? "cancel_requested" : "reschedule_requested",
+    status: "cancel_requested",
     changeRequest: {
-      type: action === "cancel" ? "cancel" : "reschedule",
+      type: "cancel",
       message,
       createdAt: new Date().toISOString(),
     },
