@@ -1,0 +1,34 @@
+name: Supabase keepalive
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-keepalive
+  cancel-in-progress: true
+
+jobs:
+  check-database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Check DojoMath database health
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl \
+            --fail-with-body \
+            --silent \
+            --show-error \
+            --retry 3 \
+            --retry-all-errors \
+            --max-time 30 \
+            https://www.domaths.fr/api/health \
+            --output health.json
+
+          node -e "const health = require('./health.json'); if (health.ok !== true) { console.error('Supabase health check failed.'); process.exit(1); } console.log('Supabase is healthy.');"
