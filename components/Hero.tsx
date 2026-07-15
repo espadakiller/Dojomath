@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { BadgeCheck, CalendarDays, ShieldCheck, Video } from "lucide-react";
 
 const railImages = [
   "/hero-rail/rail-01.png",
@@ -15,48 +16,13 @@ const railImages = [
   "/hero-rail/rail-08.png",
   "/hero-rail/rail-09.png",
   "/hero-rail/rail-10.png",
-];
-
-const dailyQuotes = [
-  {
-    text: "Patience et longueur de temps font plus que force ni que rage.",
-    source: "Jean de La Fontaine, Le Lion et le Rat",
-  },
-  {
-    text: "Travaillez, prenez de la peine : c'est le fonds qui manque le moins.",
-    source: "Jean de La Fontaine, Le Laboureur et ses enfants",
-  },
-  {
-    text: "Aide-toi, le ciel t'aidera.",
-    source: "Jean de La Fontaine, Le Charretier embourbé",
-  },
-  {
-    text: "Vingt fois sur le métier remettez votre ouvrage.",
-    source: "Nicolas Boileau, L'Art poétique",
-  },
-  {
-    text: "Hâtez-vous lentement ; et, sans perdre courage.",
-    source: "Nicolas Boileau, L'Art poétique",
-  },
-  {
-    text: "Le travail éloigne de nous trois grands maux, l'ennui, le vice et le besoin.",
-    source: "Voltaire, Candide",
-  },
-  {
-    text: "Il faut cultiver notre jardin.",
-    source: "Voltaire, Candide",
-  },
 ] as const;
 
-function getDailyQuote() {
-  const today = new Date();
-  const yearStart = new Date(today.getFullYear(), 0, 0);
-  const dayOfYear = Math.floor(
-    (today.getTime() - yearStart.getTime()) / 86_400_000,
-  );
-
-  return dailyQuotes[dayOfYear % dailyQuotes.length];
-}
+const facts = [
+  { icon: BadgeCheck, text: "Enseignant certifié" },
+  { icon: Video, text: "Cours individuel en visio" },
+  { icon: ShieldCheck, text: "Sans engagement dès 30 €/h" },
+];
 
 function ImageTicker({
   direction,
@@ -69,7 +35,10 @@ function ImageTicker({
   const images = [...sequence, ...sequence];
 
   return (
-    <div className={`hero-ticker hero-ticker-${direction} ${className}`}>
+    <div
+      aria-hidden="true"
+      className={`hero-ticker hero-ticker-${direction} ${className}`}
+    >
       <div className="hero-ticker-track">
         {images.map((src, index) => (
           <div className="hero-ticker-tile" key={`${direction}-${index}`}>
@@ -78,6 +47,8 @@ function ImageTicker({
               alt=""
               width={180}
               height={128}
+              quality={65}
+              sizes="156px"
               className="h-full w-full object-cover"
             />
           </div>
@@ -88,138 +59,105 @@ function ImageTicker({
 }
 
 export default function Hero() {
-  const dailyQuote = getDailyQuote();
-
   return (
-    <section className="relative z-10 overflow-hidden px-6 pt-28 pb-20 sm:pt-32 sm:pb-24">
+    <section className="relative z-10 overflow-hidden px-6 pb-20 pt-28 sm:pb-24 sm:pt-32">
       <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.95fr_1.05fr]">
-        <div className="mx-auto flex w-full max-w-[36rem] flex-col items-start lg:mx-0 lg:-translate-y-6">
-          <motion.div
-            className="relative mb-6 inline-flex min-h-11 max-w-full items-center gap-3 overflow-hidden rounded-full border border-[#b88a3b]/30 bg-[#fffaf3]/82 px-4 py-2.5 text-[#6f1022] shadow-md shadow-[#6f1022]/6 backdrop-blur-sm sm:px-5"
-            initial={{ opacity: 0, y: 18, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.55, ease: "easeOut" }}
+        <div className="mx-auto flex w-full max-w-[38rem] flex-col items-start lg:mx-0">
+          <motion.p
+            className="inline-flex min-h-11 items-center rounded-full border border-[#b88a3b]/35 bg-[#fffaf3]/90 px-5 text-sm font-semibold uppercase tracking-[0.14em] text-[#6f1022] shadow-sm"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
           >
-            <motion.span
-              aria-hidden="true"
-              className="absolute inset-y-1 left-0 w-20 rounded-full bg-white/55 blur-lg"
-              animate={{ x: ["-140%", "560%"] }}
-              transition={{
-                duration: 2.8,
-                ease: "easeInOut",
-                repeat: Infinity,
-                repeatDelay: 3.2,
-              }}
-            />
-            <span className="relative flex min-w-0 items-center gap-3">
-              <span className="relative flex h-2.5 w-2.5 shrink-0 rounded-full bg-[#6f1022]">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#6f1022]/35" />
-              </span>
-              <span className="relative text-sm font-semibold uppercase leading-none tracking-[0.14em] sm:text-[0.8rem]">
-                Cours particuliers de mathématiques en ligne
-              </span>
-            </span>
-          </motion.div>
+            Mathématiques · Collège · Lycée · Supérieur
+          </motion.p>
 
           <motion.h1
-            className="max-w-[34rem] text-5xl font-semibold leading-[0.98] tracking-[-0.04em] text-[#171313] sm:text-6xl lg:text-7xl"
-            initial={{ opacity: 0, y: 24 }}
+            className="mt-7 max-w-[38rem] text-5xl font-semibold leading-[0.98] tracking-[-0.045em] text-[#171313] sm:text-6xl lg:text-7xl"
+            initial={{ opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            transition={{ delay: 0.08 }}
           >
-            Un déclic peut tout changer.
+            Des cours de maths clairs, en visio et à votre rythme.
           </motion.h1>
 
-          <motion.div
-            className="mt-6 flex max-w-full flex-wrap items-center gap-x-5 gap-y-3 text-[#6f1022]"
+          <motion.p
+            className="mt-6 max-w-2xl text-lg leading-8 text-[#554c47]"
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.18, duration: 0.5, ease: "easeOut" }}
+            transition={{ delay: 0.16 }}
           >
-            <span className="flex items-center gap-2 text-xs font-semibold uppercase leading-none tracking-[0.14em]">
-              <motion.span
-                aria-hidden="true"
-                className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#6f1022]"
-                animate={{ scale: [1, 1.45, 1], opacity: [0.72, 1, 0.72] }}
-                transition={{
-                  duration: 1.9,
-                  ease: "easeInOut",
-                  repeat: Infinity,
-                }}
-              />
-              Enseignant certifié
-            </span>
-            <span className="hidden h-4 w-px shrink-0 bg-[#b88a3b]/45 sm:block" />
-            <span className="flex items-center gap-2 text-xs font-semibold uppercase leading-none tracking-[0.14em] text-[#5f514b]">
-              <motion.span
-                aria-hidden="true"
-                className="h-2.5 w-2.5 shrink-0 rounded-full border border-[#b88a3b] bg-[#b88a3b]/35"
-                animate={{ rotate: [0, 180, 360], scale: [1, 0.82, 1] }}
-                transition={{
-                  duration: 3,
-                  ease: "linear",
-                  repeat: Infinity,
-                }}
-              />
-              5+ ans d&apos;expérience
-            </span>
-          </motion.div>
+            Un accompagnement individuel assuré par un enseignant certifié :
+            explications simples, exercices ciblés et bilan clair après la
+            séance. La première heure est proposée à 30 €, sans engagement.
+          </motion.p>
+
+          <motion.ul
+            className="mt-7 grid gap-3 text-sm font-semibold text-[#4a3c36] sm:grid-cols-2"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.22 }}
+          >
+            {facts.map((fact) => (
+              <li key={fact.text} className="flex items-center gap-2">
+                <fact.icon className="text-[#6f1022]" size={18} />
+                {fact.text}
+              </li>
+            ))}
+          </motion.ul>
 
           <motion.div
-            className="mt-9 flex w-full max-w-[29rem] flex-col gap-4 sm:flex-row"
-            initial={{ opacity: 0, y: 24 }}
+            className="mt-9 flex w-full max-w-[34rem] flex-col gap-4 sm:flex-row"
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.26 }}
+            transition={{ delay: 0.28 }}
           >
             <Link
               href="/reservation"
-              className="flex min-h-14 items-center justify-center rounded-full bg-[#6f1022] px-7 py-4 text-center text-sm font-semibold text-[#fffaf3] shadow-lg shadow-[#6f1022]/15 transition hover:scale-[1.03] hover:bg-[#8a1730]"
+              className="flex min-h-14 items-center justify-center gap-2 rounded-full bg-[#6f1022] px-7 py-4 text-center text-sm font-semibold text-[#fffaf3] shadow-lg shadow-[#6f1022]/15 transition hover:scale-[1.02] hover:bg-[#8a1730]"
             >
-              Réserver un cours
+              <CalendarDays size={18} />
+              Voir les créneaux
             </Link>
-
             <Link
-              href="/tarifs"
-              className="flex min-h-14 items-center justify-center rounded-full border border-[#b88a3b]/35 bg-[#fffaf3] px-7 py-4 text-center text-sm font-semibold text-[#171313] transition hover:scale-[1.03] hover:border-[#b88a3b] hover:text-[#6f1022]"
+              href="/contact"
+              className="flex min-h-14 items-center justify-center rounded-full border border-[#b88a3b]/45 bg-[#fffaf3] px-7 py-4 text-center text-sm font-semibold text-[#171313] transition hover:border-[#6f1022] hover:text-[#6f1022]"
             >
-              Voir les tarifs
+              Poser une question
             </Link>
           </motion.div>
         </div>
 
         <motion.div
-          className="relative min-h-[560px] sm:min-h-[610px]"
-          initial={{ opacity: 0, scale: 0.97, y: 20 }}
+          className="relative mx-auto min-h-[560px] w-full max-w-[42rem] sm:min-h-[610px]"
+          initial={{ opacity: 0, scale: 0.98, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ delay: 0.35, duration: 0.7 }}
+          transition={{ delay: 0.24, duration: 0.65 }}
         >
-          <div className="absolute inset-x-[-1.5rem] top-0 bottom-0 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]">
+          <div className="absolute inset-x-[-1.5rem] bottom-0 top-0 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]">
             <ImageTicker direction="right" className="top-3 sm:top-6" />
             <ImageTicker direction="left" className="bottom-3 sm:bottom-7" />
           </div>
 
           <div className="absolute inset-0 z-10 flex items-center">
-            <div className="relative w-full overflow-hidden rounded-[2rem] bg-[#fffaf3] shadow-2xl shadow-[#6f1022]/12 ring-1 ring-[#b88a3b]/25">
+            <div className="relative w-full overflow-hidden rounded-[2rem] bg-[#fffaf3] p-3 shadow-2xl shadow-[#6f1022]/12 ring-1 ring-[#b88a3b]/30">
               <Image
                 src="/hero.jpg"
-                alt="Étudiant concentré dans un environnement calme"
+                alt="Élève travaillant les mathématiques dans un espace calme"
                 width={900}
                 height={650}
                 priority
-                className="h-[430px] w-full object-cover sm:h-[500px]"
+                quality={72}
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="h-[430px] w-full rounded-[1.45rem] object-cover sm:h-[520px]"
               />
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/5 to-transparent" />
-
-              <div className="absolute bottom-6 left-6 right-6 rounded-3xl border border-[#b88a3b]/25 bg-[#fffaf3]/90 p-5 text-[#171313] backdrop-blur-xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#6f1022]">
-                  Citation du jour
+              <div className="absolute bottom-6 left-6 right-6 rounded-2xl border border-[#b88a3b]/30 bg-[#fffaf3]/95 p-5 shadow-xl backdrop-blur sm:left-auto sm:w-[20rem]">
+                <p className="text-sm font-semibold text-[#6f1022]">
+                  Une séance concrète
                 </p>
-                <p className="mt-2 text-lg font-semibold leading-7 sm:text-xl">
-                  « {dailyQuote.text} »
-                </p>
-                <p className="mt-3 text-sm text-[#645c58]">
-                  {dailyQuote.source}
+                <p className="mt-2 text-sm leading-6 text-[#554c47]">
+                  Diagnostic du blocage, explication guidée, exercices puis
+                  points à retravailler : le déroulé est annoncé avant de payer.
                 </p>
               </div>
             </div>

@@ -171,7 +171,7 @@ export default function BookingEmbed() {
     : "";
   const progressSteps = [
     { label: "Compte", done: Boolean(account) },
-    { label: "Jetons", done: hasEnoughTokens },
+    { label: "Heures", done: hasEnoughTokens },
     { label: "Créneau", done: Boolean(selectedSlot) },
     {
       label: "Infos",
@@ -332,7 +332,7 @@ export default function BookingEmbed() {
       ...current,
     ]);
     setStatus("success");
-    setMessage("Créneau réservé. Les jetons ont été débités du compte.");
+    setMessage("Créneau réservé. Le crédit d'heures a été débité du compte.");
     setSelectedSlot("");
     setTopic("");
     setNotes("");
@@ -505,7 +505,7 @@ export default function BookingEmbed() {
         {account && (
           <div className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#6f1022] px-5 text-sm font-semibold text-[#fffaf3] shadow-md shadow-[#6f1022]/15">
             <BadgeCheck size={17} />
-            {account.tokens} jeton{account.tokens > 1 ? "s" : ""} disponible
+            {account.tokens} h disponible
             {account.tokens > 1 ? "s" : ""}
           </div>
         )}
@@ -544,7 +544,7 @@ export default function BookingEmbed() {
                     Solde
                   </p>
                   <p className="mt-1 text-lg font-semibold text-[#171313]">
-                    {account.tokens} jeton{account.tokens > 1 ? "s" : ""}
+                    {account.tokens} h
                   </p>
                 </div>
                 <div className="rounded-xl border border-[#245447]/15 bg-white/70 px-4 py-3">
@@ -705,10 +705,10 @@ export default function BookingEmbed() {
             </div>
             <div>
               <h2 className="text-2xl font-semibold tracking-[-0.04em] text-[#171313]">
-                Jetons de réservation
+                Crédit d&apos;heures
               </h2>
               <p className="mt-1 text-sm text-[#645c58]">
-                Un jeton correspond à une heure de cours.
+                Une heure achetée permet de réserver une heure de cours.
               </p>
             </div>
           </div>
@@ -782,7 +782,7 @@ export default function BookingEmbed() {
           </div>
           <p className="mt-3 text-sm leading-6 text-[#645c58]">
             Le paiement est lié au compte connecté. Dès que Stripe confirme le
-            règlement, les jetons sont ajoutés automatiquement.
+            règlement, les heures sont ajoutées automatiquement.
           </p>
         </section>
       </div>
@@ -796,7 +796,7 @@ export default function BookingEmbed() {
               </h2>
               <p className="mt-1 text-sm text-[#645c58]">
                 Deux mois de disponibilités · {selectedPlan.title} ·{" "}
-                {selectedRule.durationHours} jeton
+                {selectedRule.durationHours} h
                 {selectedRule.durationHours > 1 ? "s" : ""}
               </p>
             </div>
@@ -881,7 +881,7 @@ export default function BookingEmbed() {
                     } disabled:cursor-not-allowed disabled:opacity-40`}
                   >
                     <span>{slot}</span>
-                    {taken ? "Pris" : `${selectedRule.durationHours} jeton`}
+                    {taken ? "Pris" : `${selectedRule.durationHours} h`}
                   </button>
                 );
               })}
@@ -943,7 +943,7 @@ export default function BookingEmbed() {
                 Coût
               </p>
               <p className="mt-1 font-semibold text-[#171313]">
-                {selectedRule.durationHours} jeton
+                {selectedRule.durationHours} h
                 {selectedRule.durationHours > 1 ? "s" : ""}
               </p>
             </div>
@@ -952,7 +952,7 @@ export default function BookingEmbed() {
                 Solde
               </p>
               <p className="mt-1 font-semibold text-[#171313]">
-                {account?.tokens ?? 0} jeton{(account?.tokens ?? 0) > 1 ? "s" : ""}
+                {account?.tokens ?? 0} h
               </p>
             </div>
           </div>
@@ -1044,7 +1044,7 @@ export default function BookingEmbed() {
                 : !account
                   ? "Compte requis"
                   : !hasEnoughTokens
-                    ? "Jetons insuffisants"
+                    ? "Crédit d'heures insuffisant"
                     : "Confirmer le créneau"}
           </button>
         </section>
