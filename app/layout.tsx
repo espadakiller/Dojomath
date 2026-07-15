@@ -27,7 +27,7 @@ export default function RootLayout({
     <html lang="fr" className={GeistSans.variable}>
       <body className={GeistSans.className}>
         <Navbar />
-        <main className="relative z-10">{children}</main>
+        <div className="relative z-10">{children}</div>
         <Footer />
       </body>
     </html>

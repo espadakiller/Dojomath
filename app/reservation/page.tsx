@@ -34,7 +34,7 @@ const faqs = [
   {
     question: "Puis-je déplacer un cours ?",
     answer:
-      "Oui, depuis la liste des réservations, une demande de déplacement ou d'annulation peut être envoyée.",
+      "Oui. Cliquez sur Déplacer, choisissez un créneau disponible et confirmez. L'annulation reste soumise à validation.",
   },
 ];
 

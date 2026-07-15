@@ -1,3 +1,4 @@
+import { sendContactEmail } from "@/lib/email";
 import {
   asBoundedText,
   assertSameOrigin,
@@ -8,14 +9,17 @@ import {
   readJsonBody,
 } from "@/lib/security";
 
-const recipient = process.env.CONTACT_TO_EMAIL ?? "mkkurban9@gmail.com";
-const sender = process.env.CONTACT_FROM_EMAIL ?? "DojoMath <onboarding@resend.dev>";
+const recipient =
+  process.env.CONTACT_TO_EMAIL ??
+  process.env.TEACHER_EMAIL ??
+  "mkkurban9@gmail.com";
 const subject = "DOJOMATH CONTACTS";
 
 type ContactPayload = {
   name?: unknown;
   email?: unknown;
   message?: unknown;
+  website?: unknown;
 };
 
 export async function POST(request: Request) {
@@ -41,9 +45,15 @@ export async function POST(request: Request) {
     return json.response;
   }
 
+  const website = asBoundedText(json.data.website, { max: 200 });
+
+  if (website) {
+    return Response.json({ ok: true, sent: true });
+  }
+
   const name = asBoundedText(json.data.name, { max: 100, min: 1 });
   const email = normalizeEmail(json.data.email);
-  const message = asBoundedText(json.data.message, { max: 2_000, min: 1 });
+  const message = asBoundedText(json.data.message, { max: 2_000, min: 3 });
 
   if (!name || !email || !message) {
     return jsonError("Tous les champs sont obligatoires.", 400);
@@ -64,39 +74,24 @@ export async function POST(request: Request) {
     subject,
   )}&body=${encodeURIComponent(text)}`;
 
-  const apiKey = process.env.RESEND_API_KEY;
+  const result = await sendContactEmail({ name, email, message });
 
-  if (apiKey) {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: sender,
-        to: [recipient],
-        subject,
-        text,
-        reply_to: email,
-      }),
-    });
-
-    if (!response.ok) {
-      const resendMessage = await response.text();
-      console.error("DojoMath contact email failed", resendMessage);
-
-      return Response.json({
-        ok: true,
+  if (!result.ok) {
+    return Response.json(
+      {
+        ok: false,
         sent: false,
         mailto,
         message:
-          "L'envoi automatique est indisponible. Votre application mail va s'ouvrir avec le message prérempli.",
-      });
-    }
-
-    return Response.json({ ok: true, sent: true });
+          "L'envoi automatique est momentanément indisponible. Vous pouvez ouvrir votre messagerie avec le message déjà rempli.",
+      },
+      { status: 503 },
+    );
   }
 
-  return Response.json({ ok: true, sent: false, mailto });
+  return Response.json({
+    ok: true,
+    sent: true,
+    message: "Message envoyé. Vous recevrez une réponse par email.",
+  });
 }

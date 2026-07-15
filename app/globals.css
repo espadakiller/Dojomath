@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+:focus-visible {
+  outline: 3px solid rgba(111, 16, 34, 0.72);
+  outline-offset: 3px;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -160,8 +173,20 @@ h3,
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   .logo-mark-spin,
   .hero-ticker-track {
     animation-play-state: paused;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
   }
 }

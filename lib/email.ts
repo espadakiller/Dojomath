@@ -1,13 +1,17 @@
+import { randomUUID } from "node:crypto";
+
 import type { PublicAccount } from "@/lib/accounts";
 import type { BookingRecord } from "@/lib/booking";
 import type { PlanId } from "@/lib/pricing";
 
 type EmailPayload = {
+  from?: string;
   to: string;
   subject: string;
   html: string;
   text: string;
   idempotencyKey: string;
+  replyTo?: string;
 };
 
 const resendApiKey = process.env.RESEND_API_KEY;
@@ -42,8 +46,10 @@ function formatDate(dateKey: string) {
 }
 
 async function sendEmail(payload: EmailPayload) {
-  if (!resendApiKey || !emailFrom) {
-    console.warn("DojoMath email skipped: RESEND_API_KEY or EMAIL_FROM is missing.");
+  const from = payload.from ?? emailFrom;
+
+  if (!resendApiKey || !from) {
+    console.warn("DojoMath email skipped: RESEND_API_KEY or sender is missing.");
     return { ok: false, skipped: true };
   }
 
@@ -55,11 +61,12 @@ async function sendEmail(payload: EmailPayload) {
       "Idempotency-Key": payload.idempotencyKey,
     },
     body: JSON.stringify({
-      from: emailFrom,
+      from,
       to: [payload.to],
       subject: payload.subject,
       html: payload.html,
       text: payload.text,
+      ...(payload.replyTo ? { reply_to: payload.replyTo } : {}),
     }),
   });
 
@@ -111,6 +118,45 @@ export function sendWelcomeEmail(account: PublicAccount) {
         <p>Bonjour ${firstName},</p>
         <p>Votre compte DojoMath a bien &eacute;t&eacute; cr&eacute;&eacute;. Vous pouvez maintenant acheter des jetons puis r&eacute;server vos cours depuis votre espace de r&eacute;servation.</p>
         <p style="margin:20px 0 0;"><strong>Email du compte :</strong> ${escapeHtml(account.email)}</p>
+      `,
+    ),
+  });
+}
+
+export function sendContactEmail(details: {
+  name: string;
+  email: string;
+  message: string;
+}) {
+  const recipient =
+    process.env.CONTACT_TO_EMAIL ??
+    process.env.TEACHER_EMAIL ??
+    "mkkurban9@gmail.com";
+  const sender = process.env.CONTACT_FROM_EMAIL ?? emailFrom;
+  const safeMessage = escapeHtml(details.message).replace(/\n/g, "<br />");
+
+  return safelySendEmail({
+    from: sender,
+    to: recipient,
+    replyTo: details.email,
+    subject: `Nouveau message DojoMath - ${details.name}`,
+    idempotencyKey: `contact-${randomUUID()}`,
+    text: [
+      "Nouveau message depuis le site DojoMath",
+      "",
+      `Nom : ${details.name}`,
+      `Email : ${details.email}`,
+      "",
+      "Message :",
+      details.message,
+    ].join("\n"),
+    html: baseTemplate(
+      "Nouveau message",
+      `
+        <p><strong>Nom :</strong> ${escapeHtml(details.name)}<br />
+        <strong>Email :</strong> <a href="mailto:${escapeHtml(details.email)}">${escapeHtml(details.email)}</a></p>
+        <p style="margin-top:22px;"><strong>Message :</strong></p>
+        <p style="white-space:normal;">${safeMessage}</p>
       `,
     ),
   });

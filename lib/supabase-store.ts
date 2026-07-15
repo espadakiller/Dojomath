@@ -1,4 +1,10 @@
-const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
+export function normalizeSupabaseUrl(value: string | undefined) {
+  return value
+    ?.replace(/\/rest\/v1\/?$/i, "")
+    .replace(/\/$/, "");
+}
+
+const supabaseUrl = normalizeSupabaseUrl(process.env.SUPABASE_URL);
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export const hasSupabaseStorage = Boolean(supabaseUrl && serviceRoleKey);

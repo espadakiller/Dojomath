@@ -1,4 +1,7 @@
-import { selectRows } from "@/lib/supabase-store";
+import {
+  normalizeSupabaseUrl,
+  selectRows,
+} from "@/lib/supabase-store";
 import { hasValidAdminToken } from "@/lib/security";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +28,7 @@ export async function GET(request: Request) {
     return Response.json({ ok: false, message: "Non autorisé." }, { status: 401 });
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseUrl = normalizeSupabaseUrl(process.env.SUPABASE_URL);
   const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const hasSupabaseConfig = Boolean(supabaseUrl && supabaseServiceRoleKey);
   let supabase = {
@@ -50,6 +53,12 @@ export async function GET(request: Request) {
     }
   }
 
+  const configuredEmailFrom =
+    process.env.CONTACT_FROM_EMAIL ?? process.env.EMAIL_FROM;
+  const configuredContactTo =
+    process.env.CONTACT_TO_EMAIL ??
+    process.env.TEACHER_EMAIL ??
+    "mkkurban9@gmail.com";
   const ok = supabase.configured && supabase.urlLooksValid && supabase.reachable;
 
   if (!wantsDetails) {
@@ -62,6 +71,11 @@ export async function GET(request: Request) {
     email: {
       configured: Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM),
       fromConfigured: Boolean(process.env.EMAIL_FROM),
+      contactConfigured: Boolean(
+        process.env.RESEND_API_KEY &&
+          configuredEmailFrom &&
+          configuredContactTo,
+      ),
     },
   });
 }

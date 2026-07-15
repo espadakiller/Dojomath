@@ -93,6 +93,27 @@ function getBookingStatusLabel(status: BookingRecord["status"]) {
 
 const daysPerPage = 12;
 
+type ApiFailure = { ok: false; message: string };
+
+async function apiRequest<T extends { ok: boolean }>(
+  input: string,
+  init?: RequestInit,
+  fallbackMessage = "Le service est momentanément indisponible. Réessayez dans quelques instants.",
+): Promise<T | ApiFailure> {
+  try {
+    const response = await fetch(input, init);
+    const data = (await response.json().catch(() => null)) as T | null;
+
+    if (!data || typeof data !== "object" || !("ok" in data)) {
+      return { ok: false, message: fallbackMessage };
+    }
+
+    return data;
+  } catch {
+    return { ok: false, message: fallbackMessage };
+  }
+}
+
 export default function BookingEmbed() {
   const days = useMemo(() => getBookingDays(), []);
   const [account, setAccount] = useState<PublicAccount | null>(null);
@@ -116,6 +137,10 @@ export default function BookingEmbed() {
   const [reschedulingBookingId, setReschedulingBookingId] = useState<
     string | null
   >(null);
+  const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(
+    null,
+  );
+  const [cancellationReason, setCancellationReason] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
     "idle",
   );
@@ -155,38 +180,47 @@ export default function BookingEmbed() {
   ];
 
   async function loadBookings() {
-    const response = await fetch("/api/bookings", { cache: "no-store" });
-    const data = (await response.json()) as {
+    const data = await apiRequest<{
       ok: boolean;
+      message?: string;
       bookings?: BookingRecord[];
       occupiedSlots?: OccupiedSlot[];
-    };
+    }>("/api/bookings", { cache: "no-store" });
 
-    if (data.ok) {
-      setBookings(data.bookings ?? []);
-      setOccupiedSlots(data.occupiedSlots ?? []);
+    if (!data.ok) {
+      setStatus("error");
+      setMessage(data.message ?? "Impossible de charger les réservations.");
+      return;
     }
+
+    setBookings(data.bookings ?? []);
+    setOccupiedSlots(data.occupiedSlots ?? []);
   }
 
   useEffect(() => {
     let active = true;
 
     async function loadAccount() {
-      const response = await fetch("/api/accounts", { cache: "no-store" });
-      const data = (await response.json()) as AccountResponse;
+      const data = await apiRequest<AccountResponse>("/api/accounts", {
+        cache: "no-store",
+      });
 
       if (!active) {
         return;
       }
 
-      if (data.ok) {
-        setAccount(data.account);
-        if (data.account) {
-          setFirstName(data.account.firstName);
-          setLastName(data.account.lastName);
-          setEmail(data.account.email);
-          void loadBookings();
-        }
+      if (!data.ok) {
+        setStatus("error");
+        setAuthNotice({ type: "error", message: data.message });
+        return;
+      }
+
+      setAccount(data.account);
+      if (data.account) {
+        setFirstName(data.account.firstName);
+        setLastName(data.account.lastName);
+        setEmail(data.account.email);
+        void loadBookings();
       }
     }
 
@@ -209,12 +243,11 @@ export default function BookingEmbed() {
     setMessage("");
     setAuthNotice(null);
 
-    const response = await fetch("/api/accounts", {
+    const data = await apiRequest<AccountResponse>("/api/accounts", {
       method: authMode === "signup" ? "POST" : "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ firstName, lastName, email, password }),
     });
-    const data = (await response.json()) as AccountResponse;
 
     if (!data.ok || !data.account) {
       setStatus("error");
@@ -241,7 +274,19 @@ export default function BookingEmbed() {
   }
 
   async function logout() {
-    await fetch("/api/accounts", { method: "DELETE" });
+    const data = await apiRequest<{ ok: boolean; message?: string }>(
+      "/api/accounts",
+      { method: "DELETE" },
+    );
+
+    if (!data.ok) {
+      setAuthNotice({
+        type: "error",
+        message: data.message ?? "La déconnexion a échoué.",
+      });
+      return;
+    }
+
     setAccount(null);
     setBookings([]);
     setPassword("");
@@ -260,7 +305,7 @@ export default function BookingEmbed() {
     setStatus("loading");
     setMessage("");
 
-    const response = await fetch("/api/bookings", {
+    const data = await apiRequest<BookingResponse>("/api/bookings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -273,7 +318,6 @@ export default function BookingEmbed() {
         notes,
       }),
     });
-    const data = (await response.json()) as BookingResponse;
 
     if (!data.ok) {
       setStatus("error");
@@ -302,6 +346,8 @@ export default function BookingEmbed() {
       Math.max(0, Math.floor(days.indexOf(booking.date) / daysPerPage)),
     );
     setReschedulingBookingId(booking.id);
+    setCancellingBookingId(null);
+    setCancellationReason("");
     setChangeStatus(null);
     setMessage(
       "Choisissez un nouveau créneau disponible dans le calendrier, puis confirmez le déplacement.",
@@ -319,7 +365,7 @@ export default function BookingEmbed() {
     setMessage("");
     setChangeStatus(null);
 
-    const response = await fetch("/api/bookings", {
+    const data = await apiRequest<ChangeBookingResponse>("/api/bookings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -329,7 +375,6 @@ export default function BookingEmbed() {
         time: selectedSlot,
       }),
     });
-    const data = (await response.json()) as ChangeBookingResponse;
 
     if (!data.ok) {
       setStatus("error");
@@ -352,32 +397,33 @@ export default function BookingEmbed() {
     setMessage("Cours déplacé. Le nouveau créneau est bien réservé.");
   }
 
-  async function requestBookingChange(
-    bookingId: string,
-    action: "cancel",
-  ) {
-    const requestMessage = window.prompt(
-      "Expliquez brièvement la raison de l'annulation.",
-    );
+  async function requestBookingCancellation(bookingId: string) {
+    const requestMessage = cancellationReason.trim();
 
-    if (!requestMessage?.trim()) {
+    if (requestMessage.length < 3) {
+      setChangeStatus({
+        bookingId,
+        type: "error",
+        message: "Indiquez brièvement la raison de l'annulation.",
+      });
       return;
     }
 
+    setStatus("loading");
     setChangeStatus(null);
 
-    const response = await fetch("/api/bookings", {
+    const data = await apiRequest<ChangeBookingResponse>("/api/bookings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         bookingId,
-        action,
+        action: "cancel",
         message: requestMessage,
       }),
     });
-    const data = (await response.json()) as ChangeBookingResponse;
 
     if (!data.ok) {
+      setStatus("error");
       setChangeStatus({
         bookingId,
         type: "error",
@@ -391,6 +437,9 @@ export default function BookingEmbed() {
         booking.id === data.booking.id ? data.booking : booking,
       ),
     );
+    setCancellingBookingId(null);
+    setCancellationReason("");
+    setStatus("success");
     setChangeStatus({
       bookingId,
       type: "success",
@@ -561,6 +610,9 @@ export default function BookingEmbed() {
                       Prénom
                     </span>
                     <input
+                      type="text"
+                      autoComplete="given-name"
+                      maxLength={80}
                       value={firstName}
                       onChange={(event) => setFirstName(event.target.value)}
                       className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
@@ -572,6 +624,9 @@ export default function BookingEmbed() {
                       Nom
                     </span>
                     <input
+                      type="text"
+                      autoComplete="family-name"
+                      maxLength={80}
                       value={lastName}
                       onChange={(event) => setLastName(event.target.value)}
                       className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
@@ -588,6 +643,9 @@ export default function BookingEmbed() {
                   </span>
                   <input
                     type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    maxLength={254}
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                     className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
@@ -600,6 +658,11 @@ export default function BookingEmbed() {
                   </span>
                   <input
                     type="password"
+                    autoComplete={
+                      authMode === "signup" ? "new-password" : "current-password"
+                    }
+                    minLength={8}
+                    maxLength={128}
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
@@ -900,6 +963,9 @@ export default function BookingEmbed() {
                 Élève
               </span>
               <input
+                type="text"
+                autoComplete="off"
+                maxLength={80}
                 value={studentName}
                 onChange={(event) => setStudentName(event.target.value)}
                 className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
@@ -927,6 +993,8 @@ export default function BookingEmbed() {
               Objectif du cours
             </span>
             <input
+              type="text"
+              maxLength={160}
               value={topic}
               onChange={(event) => setTopic(event.target.value)}
               className="w-full rounded-xl border border-[#b88a3b]/25 bg-[#fffaf6] px-4 py-3 text-[#171313] outline-none transition placeholder:text-[#645c58]/60 focus:border-[#6f1022]"
@@ -939,6 +1007,7 @@ export default function BookingEmbed() {
               Notes utiles
             </span>
             <textarea
+              maxLength={1000}
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
               rows={4}
@@ -1020,6 +1089,49 @@ export default function BookingEmbed() {
                 <p className="mt-3 text-sm font-medium text-[#171313]">
                   {booking.topic}
                 </p>
+                {cancellingBookingId === booking.id && (
+                  <div className="mt-4 rounded-xl border border-[#b88a3b]/30 bg-white p-3">
+                    <label className="block">
+                      <span className="mb-2 block text-xs font-semibold text-[#171313]">
+                        Motif de l’annulation
+                      </span>
+                      <textarea
+                        value={cancellationReason}
+                        onChange={(event) =>
+                          setCancellationReason(event.target.value)
+                        }
+                        rows={3}
+                        maxLength={800}
+                        className="w-full resize-none rounded-lg border border-[#b88a3b]/30 bg-[#fffaf6] px-3 py-2 text-sm text-[#171313] outline-none transition focus:border-[#6f1022]"
+                        placeholder="Expliquez brièvement votre demande..."
+                      />
+                    </label>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCancellingBookingId(null);
+                          setCancellationReason("");
+                          setChangeStatus(null);
+                        }}
+                        className="min-h-10 rounded-full border border-[#b88a3b]/35 px-3 text-xs font-semibold text-[#645c58] transition hover:border-[#6f1022]"
+                      >
+                        Retour
+                      </button>
+                      <button
+                        type="button"
+                        disabled={
+                          cancellationReason.trim().length < 3 ||
+                          status === "loading"
+                        }
+                        onClick={() => requestBookingCancellation(booking.id)}
+                        className="min-h-10 rounded-full bg-[#6f1022] px-3 text-xs font-semibold text-[#fffaf3] transition hover:bg-[#8a1730] disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Confirmer
+                      </button>
+                    </div>
+                  </div>
+                )}
                 {changeStatus?.bookingId === booking.id && (
                   <p
                     className={`mt-3 rounded-xl border px-3 py-2 text-xs font-semibold ${
@@ -1045,7 +1157,11 @@ export default function BookingEmbed() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => requestBookingChange(booking.id, "cancel")}
+                      onClick={() => {
+                        setCancellingBookingId(booking.id);
+                        setCancellationReason("");
+                        setChangeStatus(null);
+                      }}
                       className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-[#b88a3b]/35 bg-white px-3 text-xs font-semibold text-[#6f1022] transition hover:border-[#6f1022]"
                     >
                       <XCircle size={14} />

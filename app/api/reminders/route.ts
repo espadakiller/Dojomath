@@ -14,8 +14,40 @@ function hasValidReminderSecret(request: Request) {
   return Boolean(secret && provided && secret === provided);
 }
 
+function getParisOffsetMs(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Paris",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+  const values = Object.fromEntries(
+    parts
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, Number(part.value)]),
+  );
+  const parisAsUtc = Date.UTC(
+    values.year,
+    values.month - 1,
+    values.day,
+    values.hour,
+    values.minute,
+    values.second,
+  );
+
+  return parisAsUtc - date.getTime();
+}
+
 function getBookingDateTime(date: string, time: string) {
-  return new Date(`${date}T${time}:00+02:00`);
+  const [year, month, day] = date.split("-").map(Number);
+  const [hour, minute] = time.split(":").map(Number);
+  const utcGuess = new Date(Date.UTC(year, month - 1, day, hour, minute));
+
+  return new Date(utcGuess.getTime() - getParisOffsetMs(utcGuess));
 }
 
 export async function POST(request: Request) {
@@ -39,6 +71,7 @@ export async function POST(request: Request) {
   });
 
   let sent = 0;
+  let failed = 0;
 
   for (const booking of dueBookings) {
     const account = await findAccount(booking.accountId);
@@ -47,7 +80,16 @@ export async function POST(request: Request) {
       continue;
     }
 
-    await sendBookingReminderEmail(toPublicAccount(account), booking);
+    const emailResult = await sendBookingReminderEmail(
+      toPublicAccount(account),
+      booking,
+    );
+
+    if (!emailResult.ok) {
+      failed += 1;
+      continue;
+    }
+
     await updateBooking({
       ...booking,
       reminderSentAt: new Date().toISOString(),
@@ -55,5 +97,5 @@ export async function POST(request: Request) {
     sent += 1;
   }
 
-  return Response.json({ ok: true, sent });
+  return Response.json({ ok: failed === 0, sent, failed, due: dueBookings.length });
 }
