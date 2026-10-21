@@ -124,6 +124,27 @@ export function sendWelcomeEmail(account: PublicAccount) {
   });
 }
 
+export function sendTeacherSignupEmail(account: PublicAccount) {
+  return safelySendEmail({
+    to: teacherEmail,
+    subject: "Nouvelle inscription - DojoMath",
+    idempotencyKey: `teacher-signup-${account.id}`,
+    text: [
+      "Un nouveau compte a ete cree sur DojoMath.",
+      `Nom : ${account.firstName} ${account.lastName}`,
+      `Email : ${account.email}`,
+      "Cette inscription ne constitue ni un paiement ni une reservation.",
+    ].join("\n"),
+    html: baseTemplate(
+      "Nouvelle inscription",
+      `<p>Un nouveau compte a &eacute;t&eacute; cr&eacute;&eacute; sur DojoMath.</p>
+       <p><strong>Nom :</strong> ${escapeHtml(account.firstName)} ${escapeHtml(account.lastName)}<br />
+       <strong>Email :</strong> ${escapeHtml(account.email)}</p>
+       <p>Cette inscription ne constitue ni un paiement ni une r&eacute;servation.</p>`,
+    ),
+  });
+}
+
 export function sendContactEmail(details: {
   name: string;
   email: string;

@@ -19,7 +19,7 @@ import {
   getCurrentAccount,
   verifyPassword,
 } from "@/lib/local-auth";
-import { sendWelcomeEmail } from "@/lib/email";
+import { sendTeacherSignupEmail, sendWelcomeEmail } from "@/lib/email";
 import type { PlanId } from "@/lib/pricing";
 import {
   asBoundedText,
@@ -113,7 +113,10 @@ async function handlePOST(request: Request) {
   );
   const publicAccount = toPublicAccount(account);
 
-  const emailResult = await sendWelcomeEmail(publicAccount);
+  const [emailResult] = await Promise.all([
+    sendWelcomeEmail(publicAccount),
+    sendTeacherSignupEmail(publicAccount),
+  ]);
 
   return Response.json(
     {
