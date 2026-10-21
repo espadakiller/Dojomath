@@ -1,15 +1,16 @@
 import { randomUUID } from "node:crypto";
 
-import { upsertAccount } from "@/lib/account-store";
 import { getAccountName, toPublicAccount } from "@/lib/accounts";
 import {
-  createBooking,
+  reserveBooking,
   readBookings,
   readBookingsByAccount,
   updateBooking,
 } from "@/lib/booking-store";
 import {
   bookingPlanRules,
+  bookingStartsAt,
+  bookingsOverlap,
   getBookingDays,
   getSlotsForPlan,
   type BookingRecord,
@@ -25,6 +26,7 @@ import { getBookingMeetLink } from "@/lib/meeting";
 import type { PlanId } from "@/lib/pricing";
 import {
   asBoundedText,
+  apiHandler,
   assertSameOrigin,
   jsonError,
   rateLimit,
@@ -35,7 +37,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 function isPlanId(value: string): value is PlanId {
-  return value in bookingPlanRules;
+  return Object.hasOwn(bookingPlanRules, value);
 }
 
 const allowedLevels = new Set([
@@ -50,7 +52,7 @@ const allowedLevels = new Set([
   "Remise à niveau",
 ]);
 
-export async function GET() {
+async function handleGET() {
   const account = await getCurrentAccount();
 
   if (!account) {
@@ -74,18 +76,19 @@ export async function GET() {
         id: booking.id,
         date: booking.date,
         time: booking.time,
+        durationHours: booking.durationHours,
       })),
   });
 }
 
-export async function POST(request: Request) {
+async function handlePOST(request: Request) {
   const originError = assertSameOrigin(request);
 
   if (originError) {
     return originError;
   }
 
-  const limited = rateLimit(request, "bookings:create", 12, 10 * 60 * 1000);
+  const limited = await rateLimit(request, "bookings:create", 12, 10 * 60 * 1000);
 
   if (limited) {
     return limited;
@@ -145,7 +148,7 @@ export async function POST(request: Request) {
   const isTaken = bookings.some(
     (booking) =>
       booking.date === date &&
-      booking.time === time &&
+      bookingsOverlap(booking, { date, time, durationHours: rule.durationHours }) &&
       booking.status !== "cancelled",
   );
 
@@ -171,25 +174,7 @@ export async function POST(request: Request) {
     createdAt: new Date().toISOString(),
   };
 
-  const nextAccount = await upsertAccount({
-    ...account,
-    tokens: account.tokens - rule.durationHours,
-    updatedAt: new Date().toISOString(),
-  });
-
-  try {
-    await createBooking(booking);
-  } catch (error) {
-    await upsertAccount({
-      ...account,
-      updatedAt: new Date().toISOString(),
-    });
-    console.error("Booking creation failed after token debit", error);
-    return jsonError(
-      "Ce créneau vient d'être réservé ou la réservation a échoué. Aucun jeton n'a été débité.",
-      409,
-    );
-  }
+  const { account: nextAccount } = await reserveBooking(booking);
 
   const publicAccount = toPublicAccount(nextAccount);
 
@@ -202,14 +187,14 @@ export async function POST(request: Request) {
   );
 }
 
-export async function PATCH(request: Request) {
+async function handlePATCH(request: Request) {
   const originError = assertSameOrigin(request);
 
   if (originError) {
     return originError;
   }
 
-  const limited = rateLimit(request, "bookings:update", 20, 10 * 60 * 1000);
+  const limited = await rateLimit(request, "bookings:update", 20, 10 * 60 * 1000);
 
   if (limited) {
     return limited;
@@ -246,6 +231,9 @@ export async function PATCH(request: Request) {
   if (!booking) {
     return jsonError("Reservation introuvable.", 404);
   }
+  if (!["pending", "confirmed"].includes(booking.status) || bookingStartsAt(booking.date, booking.time) <= Date.now()) {
+    return jsonError("Ce cours ne peut plus etre modifie.", 409);
+  }
 
   if (action === "reschedule") {
     const date = asBoundedText(json.data.date, { max: 10 });
@@ -272,7 +260,7 @@ export async function PATCH(request: Request) {
       (current) =>
         current.id !== booking.id &&
         current.date === date &&
-        current.time === time &&
+        bookingsOverlap(current, { date, time, durationHours: booking.durationHours }) &&
         current.status !== "cancelled",
     );
 
@@ -280,14 +268,10 @@ export async function PATCH(request: Request) {
       return jsonError("Ce creneau vient d'etre reserve.", 409);
     }
 
-    const nextBooking: BookingRecord = {
-      ...booking,
+    const nextBooking = await updateBooking(booking.id, {
       date,
       time,
-      changeRequest: undefined,
-    };
-
-    await updateBooking(nextBooking);
+    }, "reschedule", account.id);
 
     return Response.json({ ok: true, booking: nextBooking });
   }
@@ -298,18 +282,19 @@ export async function PATCH(request: Request) {
     return jsonError("Expliquez brievement votre demande.", 400);
   }
 
-  const nextBooking: BookingRecord = {
-    ...booking,
+  const nextBooking = await updateBooking(booking.id, {
     status: "cancel_requested",
     changeRequest: {
       type: "cancel",
       message,
       createdAt: new Date().toISOString(),
     },
-  };
-
-  await updateBooking(nextBooking);
+  }, "cancel", account.id);
   await sendBookingChangeRequestEmail(toPublicAccount(account), nextBooking);
 
   return Response.json({ ok: true, booking: nextBooking });
 }
+
+export const GET = apiHandler(handleGET);
+export const POST = apiHandler(handlePOST);
+export const PATCH = apiHandler(handlePATCH);

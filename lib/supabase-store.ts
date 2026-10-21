@@ -9,6 +9,19 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export const hasSupabaseStorage = Boolean(supabaseUrl && serviceRoleKey);
 
+export class StorageError extends Error {
+  constructor(message: string, public status: number, public code?: string) {
+    super(message);
+    this.name = "StorageError";
+  }
+}
+
+export function assertStorageAvailable() {
+  if (process.env.NODE_ENV === "production" && !hasSupabaseStorage) {
+    throw new StorageError("Le stockage est momentanement indisponible.", 503);
+  }
+}
+
 type QueryValue = string | number | boolean;
 
 function buildUrl(table: string, params?: Record<string, QueryValue>) {
@@ -41,11 +54,19 @@ async function request<T>(
       ...(init.headers ?? {}),
     },
     cache: "no-store",
+    signal: init.signal ?? AbortSignal.timeout(10_000),
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(`Supabase ${table} request failed: ${message}`);
+    const failure = await response.json().catch(() => ({})) as {
+      message?: string;
+      code?: string;
+    };
+    throw new StorageError(
+      failure.message ?? "Le stockage est momentanement indisponible.",
+      response.status,
+      failure.code,
+    );
   }
 
   if (response.status === 204) {
@@ -54,6 +75,21 @@ async function request<T>(
 
   const body = await response.text();
   return (body ? JSON.parse(body) : null) as T;
+}
+
+export function callRpc<T>(name: string, params: Record<string, unknown>) {
+  return request<T>(`rpc/${name}`, {
+    method: "POST",
+    body: JSON.stringify(params),
+  });
+}
+
+export function insertRow(table: string, row: Record<string, unknown>) {
+  return request<null>(table, {
+    method: "POST",
+    headers: { Prefer: "return=minimal" },
+    body: JSON.stringify(row),
+  });
 }
 
 export async function selectRows<T>(

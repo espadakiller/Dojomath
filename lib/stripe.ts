@@ -21,6 +21,7 @@ export type StripeCheckoutSession = {
 export type StripeWebhookEvent = {
   id: string;
   type: string;
+  livemode?: boolean;
   data: {
     object: StripeCheckoutSession;
   };
@@ -50,7 +51,7 @@ export function verifyStripeWebhook(
   const timestamp = parts.get("t")?.[0];
   const signatures = parts.get("v1") ?? [];
 
-  if (!timestamp || signatures.length === 0) {
+  if (!timestamp || !/^\d+$/.test(timestamp) || signatures.length === 0) {
     return false;
   }
 
@@ -69,6 +70,7 @@ export function verifyStripeWebhook(
   const expectedBuffer = Buffer.from(expected, "hex");
 
   return signatures.some((signature) => {
+    if (!/^[a-f0-9]{64}$/.test(signature)) return false;
     try {
       const providedBuffer = Buffer.from(signature, "hex");
 
@@ -83,11 +85,11 @@ export function verifyStripeWebhook(
 }
 
 export function parseStripeClientReference(value: string | null | undefined) {
-  if (!value) {
+  if (typeof value !== "string") {
     return null;
   }
 
-  const match = value.match(/^(.+)_(liberte|progression|stage)$/);
+  const match = value.match(/^([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})_(liberte|progression|stage)$/i);
 
   if (!match) {
     return null;
@@ -106,11 +108,23 @@ export function planFromStripeAmount(amountTotal: number | null | undefined) {
     11000: "progression",
   } satisfies Record<number, PlanId>;
 
-  if (!amountTotal) {
+  if (!Number.isSafeInteger(amountTotal) || !Object.hasOwn(amounts, String(amountTotal))) {
     return null;
   }
 
   return amounts[amountTotal as keyof typeof amounts] ?? null;
+}
+
+export function paidPlanFromSession(session: StripeCheckoutSession) {
+  if (session.payment_status !== "paid" || session.currency !== "eur" ||
+      typeof session.id !== "string" || !/^cs_(?:test_|live_)?[a-zA-Z0-9]+$/.test(session.id)) {
+    return null;
+  }
+  const paidPlan = planFromStripeAmount(session.amount_total);
+  const reference = parseStripeClientReference(session.client_reference_id);
+  if (session.client_reference_id && !reference) return null;
+  if (reference && reference.planId !== paidPlan) return null;
+  return paidPlan;
 }
 
 export function isPlanId(value: unknown): value is PlanId {

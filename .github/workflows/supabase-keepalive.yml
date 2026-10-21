@@ -1,6 +1,12 @@
 name: Supabase keepalive
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/supabase-keepalive.yml
+      - app/api/health/route.ts
+      - vercel.json
   schedule:
     - cron: "17 */6 * * *"
   workflow_dispatch:
@@ -15,7 +21,7 @@ concurrency:
 jobs:
   check-database:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 3
     steps:
       - name: Check DojoMath database health
         shell: bash

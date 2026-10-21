@@ -189,3 +189,27 @@ export function formatDateLabel(dateKey: string, variant: "short" | "long") {
 export function getMonthKey(dateKey: string) {
   return dateKey.slice(0, 7);
 }
+
+export function bookingStartsAt(date: string, time: string) {
+  const guess = new Date(`${date}T${time}:00Z`);
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+  }).formatToParts(guess);
+  const values = Object.fromEntries(parts.filter(part => part.type !== "literal")
+    .map(part => [part.type, Number(part.value)]));
+  const offset = Date.UTC(values.year, values.month - 1, values.day,
+    values.hour, values.minute, values.second) - guess.getTime();
+  return guess.getTime() - offset;
+}
+
+export function bookingsOverlap(
+  first: { date: string; time: string; durationHours: number },
+  second: { date: string; time: string; durationHours: number },
+) {
+  if (first.date !== second.date) return false;
+  const firstStart = toMinutes(first.time);
+  const secondStart = toMinutes(second.time);
+  return firstStart < secondStart + second.durationHours * 60 + 5 &&
+    secondStart < firstStart + first.durationHours * 60 + 5;
+}

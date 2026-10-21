@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     return originError;
   }
 
-  const limited = rateLimit(request, "contact", 5, 10 * 60 * 1000);
+  const limited = await rateLimit(request, "contact", 5, 10 * 60 * 1000);
 
   if (limited) {
     return limited;

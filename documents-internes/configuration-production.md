@@ -4,6 +4,8 @@
 
 1. Creer un projet Supabase.
 2. Ouvrir SQL Editor et executer `documents-internes/supabase-schema.sql`.
+   Executer ensuite `documents-internes/supabase-security-2026-10-21.sql`.
+   Cette migration est requise avant de deployer les routes securisees.
 3. Ajouter ces variables dans l'hebergeur du site :
 
 ```env
@@ -29,3 +31,18 @@ EMAIL_FROM="DojoMath <reservation@dojomath.fr>"
 ```
 
 Tant que `RESEND_API_KEY` ou `EMAIL_FROM` manque, les emails sont ignores sans bloquer les inscriptions ni les reservations.
+
+## Surveillance et mises a jour
+
+`vercel.json` configure un controle quotidien de `/api/health` a 06:17 UTC.
+Verifier son activation dans Vercel > Cron Jobs apres le deploiement.
+GitHub Actions reste complementaire : les executions planifiees d'un depot public
+peuvent etre desactivees apres 60 jours sans activite.
+
+Avant chaque publication, executer `npm run lint`, `npm run test:security` et
+`npm run build`. `npm audit --omit=dev` controle les dependances de production.
+Dependabot propose des mises a jour hebdomadaires a relire et tester avant fusion.
+
+Le test reel `node scripts/verify-storage-security.mjs` cree puis supprime des
+donnees fictives dans le projet configure. Il doit etre lance seulement avec
+l'accord explicite du proprietaire du projet.

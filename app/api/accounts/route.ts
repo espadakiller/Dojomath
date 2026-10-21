@@ -9,7 +9,8 @@ import {
 } from "@/lib/accounts";
 import {
   findAccountByEmail,
-  upsertAccount,
+  createAccount,
+  creditAccountTokens,
 } from "@/lib/account-store";
 import {
   clearSession,
@@ -22,6 +23,7 @@ import { sendWelcomeEmail } from "@/lib/email";
 import type { PlanId } from "@/lib/pricing";
 import {
   asBoundedText,
+  apiHandler,
   assertSameOrigin,
   hasValidAdminToken,
   isValidEmail,
@@ -35,10 +37,10 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 function isPlanId(value: string): value is PlanId {
-  return value in tokenPacks;
+  return Object.hasOwn(tokenPacks, value);
 }
 
-export async function GET() {
+async function handleGET() {
   const account = await getCurrentAccount();
 
   if (!account) {
@@ -48,14 +50,14 @@ export async function GET() {
   return Response.json({ ok: true, account: toPublicAccount(account) });
 }
 
-export async function POST(request: Request) {
+async function handlePOST(request: Request) {
   const originError = assertSameOrigin(request);
 
   if (originError) {
     return originError;
   }
 
-  const limited = rateLimit(request, "accounts:create", 5, 15 * 60 * 1000);
+  const limited = await rateLimit(request, "accounts:create", 5, 15 * 60 * 1000);
 
   if (limited) {
     return limited;
@@ -95,9 +97,9 @@ export async function POST(request: Request) {
   }
 
   const now = new Date().toISOString();
-  const passwordData = createPasswordHash(password);
+  const passwordData = await createPasswordHash(password);
   const account = await createSession(
-    await upsertAccount({
+    await createAccount({
       id: randomUUID(),
       email,
       firstName,
@@ -125,7 +127,7 @@ export async function POST(request: Request) {
   );
 }
 
-export async function PUT(request: Request) {
+async function handlePUT(request: Request) {
   const originError = assertSameOrigin(request);
 
   if (originError) {
@@ -144,7 +146,9 @@ export async function PUT(request: Request) {
 
   const email = normalizeEmail(json.data.email);
   const password = asBoundedText(json.data.password, { max: 128, min: 1 });
-  const limited = rateLimit(
+  const ipLimited = await rateLimit(request, "accounts:login", 30, 10 * 60 * 1000);
+  if (ipLimited) return ipLimited;
+  const limited = await rateLimit(
     request,
     `accounts:login:${email || "unknown"}`,
     8,
@@ -156,11 +160,16 @@ export async function PUT(request: Request) {
   }
 
   const account = await findAccountByEmail(email);
+  const passwordMatches = await verifyPassword(
+    password || "invalid",
+    account?.passwordSalt ?? "0".repeat(32),
+    account?.passwordHash ?? "0".repeat(128),
+  );
 
   if (
     !account ||
     !password ||
-    !verifyPassword(password, account.passwordSalt, account.passwordHash)
+    !passwordMatches
   ) {
     return jsonError("Email ou mot de passe incorrect.", 401);
   }
@@ -174,14 +183,14 @@ export async function PUT(request: Request) {
   });
 }
 
-export async function PATCH(request: Request) {
+async function handlePATCH(request: Request) {
   const originError = assertSameOrigin(request);
 
   if (originError) {
     return originError;
   }
 
-  const limited = rateLimit(request, "accounts:tokens", 10, 10 * 60 * 1000);
+  const limited = await rateLimit(request, "accounts:tokens", 10, 10 * 60 * 1000);
 
   if (limited) {
     return limited;
@@ -221,11 +230,7 @@ export async function PATCH(request: Request) {
     return jsonError("Compte introuvable.", 404);
   }
 
-  const nextAccount = await upsertAccount({
-    ...account,
-    tokens: account.tokens + tokenPacks[planId].tokens,
-    updatedAt: new Date().toISOString(),
-  });
+  const { account: nextAccount } = await creditAccountTokens(account.id, tokenPacks[planId].tokens);
 
   return Response.json({
     ok: true,
@@ -236,14 +241,14 @@ export async function PATCH(request: Request) {
   });
 }
 
-export async function DELETE(request: Request) {
+async function handleDELETE(request: Request) {
   const originError = assertSameOrigin(request);
 
   if (originError) {
     return originError;
   }
 
-  const cookieLimited = rateLimit(request, "accounts:logout", 60, 60 * 1000);
+  const cookieLimited = await rateLimit(request, "accounts:logout", 60, 60 * 1000);
 
   if (cookieLimited) {
     return cookieLimited;
@@ -253,3 +258,9 @@ export async function DELETE(request: Request) {
 
   return Response.json({ ok: true });
 }
+
+export const GET = apiHandler(handleGET);
+export const POST = apiHandler(handlePOST);
+export const PUT = apiHandler(handlePUT);
+export const PATCH = apiHandler(handlePATCH);
+export const DELETE = apiHandler(handleDELETE);

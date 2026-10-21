@@ -1,16 +1,17 @@
 import {
   findAccount,
   findAccountByEmail,
-  upsertAccount,
+  creditAccountTokens,
 } from "@/lib/account-store";
 import { tokenPacks, toPublicAccount } from "@/lib/accounts";
 import { sendPaymentCreditsEmail } from "@/lib/email";
 import {
   parseStripeClientReference,
-  planFromStripeAmount,
+  paidPlanFromSession,
   verifyStripeWebhook,
   type StripeWebhookEvent,
 } from "@/lib/stripe";
+import { apiHandler, readRequestText } from "@/lib/security";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -23,7 +24,7 @@ function getSessionEmail(event: StripeWebhookEvent) {
   ).toLowerCase();
 }
 
-export async function POST(request: Request) {
+async function handlePOST(request: Request) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   if (!webhookSecret) {
@@ -33,7 +34,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const rawBody = await request.text();
+  const body = await readRequestText(request, 262_144);
+  if (!body.ok) return body.response;
+  const rawBody = body.text;
   const signature = request.headers.get("stripe-signature");
 
   if (!verifyStripeWebhook(rawBody, signature, webhookSecret)) {
@@ -47,6 +50,10 @@ export async function POST(request: Request) {
 
   try {
     event = JSON.parse(rawBody) as StripeWebhookEvent;
+    if (!event || typeof event.id !== "string" || typeof event.type !== "string" ||
+      !event.data || !event.data.object || typeof event.data.object !== "object") {
+      throw new Error("Invalid event");
+    }
   } catch {
     return Response.json(
       { ok: false, message: "Invalid Stripe payload." },
@@ -63,13 +70,16 @@ export async function POST(request: Request) {
 
   const session = event.data.object;
 
-  if (session.payment_status && session.payment_status !== "paid") {
+  if (process.env.NODE_ENV === "production" && event.livemode === false) {
+    return Response.json({ ok: true, ignored: true });
+  }
+
+  if (session.payment_status !== "paid") {
     return Response.json({ ok: true, ignored: true });
   }
 
   const reference = parseStripeClientReference(session.client_reference_id);
-  const fallbackPlanId = planFromStripeAmount(session.amount_total);
-  const planId = reference?.planId ?? fallbackPlanId;
+  const planId = paidPlanFromSession(session);
 
   if (!planId) {
     return Response.json(
@@ -89,17 +99,12 @@ export async function POST(request: Request) {
     );
   }
 
-  if (account.stripeEventIds?.includes(event.id)) {
-    return Response.json({ ok: true, duplicate: true });
-  }
-
   const tokenPack = tokenPacks[planId];
-  const nextAccount = await upsertAccount({
-    ...account,
-    tokens: account.tokens + tokenPack.tokens,
-    stripeEventIds: [event.id, ...(account.stripeEventIds ?? [])].slice(0, 50),
-    updatedAt: new Date().toISOString(),
+  const { account: nextAccount, duplicate } = await creditAccountTokens(account.id, tokenPack.tokens, {
+    sessionId: session.id!,
+    eventId: event.id,
   });
+  if (duplicate) return Response.json({ ok: true, duplicate: true });
 
   await sendPaymentCreditsEmail(toPublicAccount(nextAccount), {
     planId,
@@ -115,3 +120,5 @@ export async function POST(request: Request) {
     tokensAdded: tokenPack.tokens,
   });
 }
+
+export const POST = apiHandler(handlePOST);

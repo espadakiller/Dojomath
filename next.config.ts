@@ -4,12 +4,17 @@ const projectRoot = process.cwd();
 const isProduction = process.env.NODE_ENV === "production";
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   outputFileTracingRoot: projectRoot,
   turbopack: {
     root: projectRoot,
   },
   async headers() {
     return [
+      {
+        source: "/api/:path*",
+        headers: [{ key: "Cache-Control", value: "private, no-store, max-age=0" }],
+      },
       {
         source: "/:path*",
         headers: [

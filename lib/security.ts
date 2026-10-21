@@ -1,4 +1,5 @@
-import { timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
+import { callRpc, hasSupabaseStorage, StorageError } from "@/lib/supabase-store";
 
 type JsonResult<T> =
   | { ok: true; data: T }
@@ -13,7 +14,54 @@ const rateLimitStore = new Map<string, RateLimitEntry>();
 const localHostnames = new Set(["localhost", "127.0.0.1", "::1"]);
 
 export function jsonError(message: string, status: number) {
-  return Response.json({ ok: false, message }, { status });
+  return Response.json({ ok: false, message }, {
+    status,
+    headers: { "Cache-Control": "no-store" },
+  });
+}
+
+export function apiHandler(handler: (request: Request) => Promise<Response>) {
+  return async (request: Request) => {
+    try {
+      return await handler(request);
+    } catch (error) {
+      if (error instanceof StorageError) {
+        if (error.code === "23505") return jsonError("Cette demande existe deja ou le creneau est reserve.", 409);
+        if (error.code?.startsWith("PT") && [400, 401, 402, 403, 404, 409].includes(error.status)) {
+          return jsonError(error.message, error.status);
+        }
+      }
+      console.error("DojoMath API unavailable", error instanceof Error ? error.name : "UnknownError");
+      return jsonError("Le service est momentanement indisponible. Reessayez dans quelques instants.", 503);
+    }
+  };
+}
+
+export async function readRequestText(request: Request, maxBytes: number): Promise<
+  { ok: true; text: string } | { ok: false; response: Response }
+> {
+  if (Number(request.headers.get("content-length")) > maxBytes) {
+    return { ok: false, response: jsonError("La demande est trop volumineuse.", 413) };
+  }
+  const reader = request.body?.getReader();
+  if (!reader) return { ok: true, text: "" };
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > maxBytes) {
+        await reader.cancel();
+        return { ok: false, response: jsonError("La demande est trop volumineuse.", 413) };
+      }
+      chunks.push(value);
+    }
+    return { ok: true, text: Buffer.concat(chunks).toString("utf8") };
+  } finally {
+    reader.releaseLock();
+  }
 }
 
 export async function readJsonBody<T>(
@@ -21,32 +69,30 @@ export async function readJsonBody<T>(
   maxBytes: number,
   errorMessage = "La demande est illisible.",
 ): Promise<JsonResult<T>> {
-  const contentLength = request.headers.get("content-length");
-
-  if (contentLength && Number(contentLength) > maxBytes) {
+  if (request.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !== "application/json") {
     return {
       ok: false,
-      response: jsonError("La demande est trop volumineuse.", 413),
+      response: jsonError("Le format JSON est requis.", 415),
     };
   }
 
   try {
-    const body = await request.text();
-
-    if (new Blob([body]).size > maxBytes) {
-      return {
-        ok: false,
-        response: jsonError("La demande est trop volumineuse.", 413),
-      };
+    const body = await readRequestText(request, maxBytes);
+    if (!body.ok) return body;
+    const data: unknown = JSON.parse(body.text);
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
+      return { ok: false, response: jsonError(errorMessage, 400) };
     }
-
-    return { ok: true, data: JSON.parse(body) as T };
+    return { ok: true, data: data as T };
   } catch {
     return { ok: false, response: jsonError(errorMessage, 400) };
   }
 }
 
 export function assertSameOrigin(request: Request) {
+  if (request.headers.get("sec-fetch-site") === "cross-site") {
+    return jsonError("Origine de requete non autorisee.", 403);
+  }
   const origin = request.headers.get("origin");
 
   if (!origin) {
@@ -54,15 +100,10 @@ export function assertSameOrigin(request: Request) {
   }
 
   const requestUrl = new URL(request.url);
-  const host =
-    request.headers.get("x-forwarded-host") ?? request.headers.get("host");
-  const proto =
-    request.headers.get("x-forwarded-proto") ?? requestUrl.protocol.replace(":", "");
   const requestOrigin = requestUrl.origin;
   const allowedOrigins = new Set(
     [
       requestOrigin,
-      host ? `${proto}://${host}` : null,
       process.env.NEXT_PUBLIC_SITE_URL,
       process.env.VERCEL_PROJECT_PRODUCTION_URL
         ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
@@ -73,11 +114,10 @@ export function assertSameOrigin(request: Request) {
   if (process.env.NODE_ENV !== "production") {
     try {
       const originUrl = new URL(origin);
-      const hostUrl = new URL(`${proto}://${host ?? requestUrl.host}`);
 
       if (
         localHostnames.has(originUrl.hostname) &&
-        localHostnames.has(hostUrl.hostname)
+        localHostnames.has(requestUrl.hostname)
       ) {
         return null;
       }
@@ -93,7 +133,7 @@ export function assertSameOrigin(request: Request) {
   return null;
 }
 
-export function rateLimit(
+export async function rateLimit(
   request: Request,
   bucket: string,
   limit: number,
@@ -106,7 +146,30 @@ export function rateLimit(
     request.headers.get("cf-connecting-ip") ??
     "unknown";
   const key = `${bucket}:${ip}`;
+  if (hasSupabaseStorage) {
+    try {
+      const allowed = await callRpc<boolean>("dojomath_check_rate_limit", {
+        p_key: createHash("sha256").update(key).digest("hex"),
+        p_limit: limit,
+        p_window_ms: windowMs,
+      });
+      return allowed ? null : jsonError("Trop de tentatives. Reessayez dans quelques minutes.", 429);
+    } catch {
+      return jsonError("Le service est momentanement indisponible.", 503);
+    }
+  }
+  if (process.env.NODE_ENV === "production") {
+    return jsonError("Le service est momentanement indisponible.", 503);
+  }
   const now = Date.now();
+  if (rateLimitStore.size >= 2_000) {
+    for (const [entryKey, entry] of rateLimitStore) {
+      if (entry.resetAt <= now) rateLimitStore.delete(entryKey);
+    }
+    if (rateLimitStore.size >= 2_000 && !rateLimitStore.has(key)) {
+      return jsonError("Trop de tentatives. Reessayez dans quelques minutes.", 429);
+    }
+  }
   const current = rateLimitStore.get(key);
 
   if (!current || current.resetAt <= now) {

@@ -2,7 +2,7 @@ import { findAccount } from "@/lib/account-store";
 import { toPublicAccount } from "@/lib/accounts";
 import { readBookings, updateBooking } from "@/lib/booking-store";
 import { sendBookingReminderEmail } from "@/lib/email";
-import { hasValidAdminToken, jsonError } from "@/lib/security";
+import { apiHandler, hasValidAdminToken, jsonError } from "@/lib/security";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -50,7 +50,7 @@ function getBookingDateTime(date: string, time: string) {
   return new Date(utcGuess.getTime() - getParisOffsetMs(utcGuess));
 }
 
-export async function POST(request: Request) {
+async function handlePOST(request: Request) {
   if (!hasValidReminderSecret(request) && !hasValidAdminToken(request)) {
     return jsonError("Acces rappel refuse.", 401);
   }
@@ -90,12 +90,13 @@ export async function POST(request: Request) {
       continue;
     }
 
-    await updateBooking({
-      ...booking,
+    await updateBooking(booking.id, {
       reminderSentAt: new Date().toISOString(),
-    });
+    }, "reminder");
     sent += 1;
   }
 
   return Response.json({ ok: failed === 0, sent, failed, due: dueBookings.length });
 }
+
+export const POST = apiHandler(handlePOST);

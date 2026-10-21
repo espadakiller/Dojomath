@@ -3,7 +3,7 @@ import {
   findAccount,
   findAccountByEmail,
   readAccounts,
-  upsertAccount,
+  creditAccountTokens,
 } from "@/lib/account-store";
 import { tokenPacks, toPublicAccount } from "@/lib/accounts";
 import {
@@ -15,8 +15,11 @@ import type { BookingStatus } from "@/lib/booking";
 import type { PlanId } from "@/lib/pricing";
 import {
   asBoundedText,
+  apiHandler,
+  assertSameOrigin,
   hasValidAdminToken,
   jsonError,
+  rateLimit,
   readJsonBody,
 } from "@/lib/security";
 import { isPlanId } from "@/lib/stripe";
@@ -40,7 +43,9 @@ function assertAdmin(request: Request) {
   return null;
 }
 
-export async function GET(request: Request) {
+async function handleGET(request: Request) {
+  const limited = await rateLimit(request, "admin:read", 60, 60 * 1000);
+  if (limited) return limited;
   const adminError = assertAdmin(request);
 
   if (adminError) {
@@ -65,7 +70,11 @@ export async function GET(request: Request) {
   });
 }
 
-export async function PATCH(request: Request) {
+async function handlePATCH(request: Request) {
+  const originError = assertSameOrigin(request);
+  if (originError) return originError;
+  const limited = await rateLimit(request, "admin:write", 30, 60 * 1000);
+  if (limited) return limited;
   const adminError = assertAdmin(request);
 
   if (adminError) {
@@ -102,11 +111,7 @@ export async function PATCH(request: Request) {
     }
 
     const tokenPack = tokenPacks[planId as PlanId];
-    const nextAccount = await upsertAccount({
-      ...account,
-      tokens: account.tokens + tokenPack.tokens,
-      updatedAt: new Date().toISOString(),
-    });
+    const { account: nextAccount } = await creditAccountTokens(account.id, tokenPack.tokens);
 
     return Response.json({
       ok: true,
@@ -130,10 +135,9 @@ export async function PATCH(request: Request) {
       return jsonError("Reservation introuvable.", 404);
     }
 
-    const nextBooking = await updateBooking({
-      ...booking,
+    const nextBooking = await updateBooking(booking.id, {
       status: status as BookingStatus,
-    });
+    }, "admin");
 
     return Response.json({ ok: true, booking: nextBooking });
   }
@@ -162,3 +166,6 @@ export async function PATCH(request: Request) {
 
   return jsonError("Action admin inconnue.", 400);
 }
+
+export const GET = apiHandler(handleGET);
+export const PATCH = apiHandler(handlePATCH);

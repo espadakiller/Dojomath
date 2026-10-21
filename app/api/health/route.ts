@@ -40,7 +40,10 @@ export async function GET(request: Request) {
 
   if (hasSupabaseConfig) {
     try {
-      await selectRows("dojomath_accounts", { limit: 1 });
+      await Promise.all([
+        selectRows("dojomath_accounts", { select: "id", limit: 1 }),
+        selectRows("dojomath_bookings", { select: "id", limit: 1 }),
+      ]);
       supabase = {
         ...supabase,
         reachable: true,
@@ -60,9 +63,13 @@ export async function GET(request: Request) {
     process.env.TEACHER_EMAIL ??
     "mkkurban9@gmail.com";
   const ok = supabase.configured && supabase.urlLooksValid && supabase.reachable;
+  const responseOptions = {
+    status: ok ? 200 : 503,
+    headers: { "Cache-Control": "no-store" },
+  };
 
   if (!wantsDetails) {
-    return Response.json({ ok });
+    return Response.json({ ok }, responseOptions);
   }
 
   return Response.json({
@@ -77,5 +84,5 @@ export async function GET(request: Request) {
           configuredContactTo,
       ),
     },
-  });
+  }, responseOptions);
 }

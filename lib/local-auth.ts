@@ -1,9 +1,9 @@
-import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 
 import {
   findAccountBySessionToken,
-  upsertAccount,
+  setAccountSession,
 } from "@/lib/account-store";
 import type { AccountRecord } from "@/lib/accounts";
 
@@ -14,15 +14,22 @@ function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 
-export function createPasswordHash(password: string) {
+function derivePassword(password: string, salt: string) {
+  return new Promise<Buffer>((resolve, reject) => {
+    scrypt(password, salt, 64, (error, key) => error ? reject(error) : resolve(key));
+  });
+}
+
+export async function createPasswordHash(password: string) {
   const salt = randomBytes(16).toString("hex");
-  const hash = scryptSync(password, salt, 64).toString("hex");
+  const hash = (await derivePassword(password, salt)).toString("hex");
 
   return { hash, salt };
 }
 
-export function verifyPassword(password: string, salt: string, expectedHash: string) {
-  const actual = Buffer.from(scryptSync(password, salt, 64).toString("hex"), "hex");
+export async function verifyPassword(password: string, salt: string, expectedHash: string) {
+  if (!/^[a-f0-9]{32}$/.test(salt) || !/^[a-f0-9]{128}$/.test(expectedHash)) return false;
+  const actual = await derivePassword(password, salt);
   const expected = Buffer.from(expectedHash, "hex");
 
   if (actual.length !== expected.length) {
@@ -35,12 +42,7 @@ export function verifyPassword(password: string, salt: string, expectedHash: str
 export async function createSession(account: AccountRecord) {
   const token = randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + sessionMaxAgeSeconds * 1000).toISOString();
-  const nextAccount = await upsertAccount({
-    ...account,
-    sessionTokenHash: hashToken(token),
-    sessionExpiresAt: expiresAt,
-    updatedAt: new Date().toISOString(),
-  });
+  const nextAccount = await setAccountSession(account.id, hashToken(token), expiresAt);
   const cookieStore = await cookies();
 
   cookieStore.set(sessionCookieName, token, {
@@ -58,7 +60,7 @@ export async function getCurrentAccount() {
   const cookieStore = await cookies();
   const token = cookieStore.get(sessionCookieName)?.value;
 
-  if (!token) {
+  if (!token || !/^[a-f0-9]{64}$/.test(token)) {
     return null;
   }
 
@@ -68,7 +70,8 @@ export async function getCurrentAccount() {
     return null;
   }
 
-  if (new Date(account.sessionExpiresAt).getTime() <= Date.now()) {
+  const expiresAt = new Date(account.sessionExpiresAt).getTime();
+  if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
     return null;
   }
 
@@ -88,11 +91,6 @@ export async function clearSession() {
   });
 
   if (account) {
-    await upsertAccount({
-      ...account,
-      sessionTokenHash: undefined,
-      sessionExpiresAt: undefined,
-      updatedAt: new Date().toISOString(),
-    });
+    await setAccountSession(account.id, null, null, account.sessionTokenHash);
   }
 }

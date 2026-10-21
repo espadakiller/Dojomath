@@ -21,6 +21,7 @@ import {
 import { getAccountName, type PublicAccount } from "@/lib/accounts";
 import {
   bookingPlanRules,
+  bookingsOverlap,
   formatDateLabel,
   getBookingDays,
   getSlotsForPlan,
@@ -62,6 +63,7 @@ type OccupiedSlot = {
   id: string;
   date: string;
   time: string;
+  durationHours?: number;
 };
 
 function firstAvailableDate(planId: PlanId, days: string[]) {
@@ -328,7 +330,7 @@ export default function BookingEmbed() {
     setAccount(data.account);
     setBookings((current) => [data.booking, ...current]);
     setOccupiedSlots((current) => [
-      { id: data.booking.id, date: data.booking.date, time: data.booking.time },
+      { id: data.booking.id, date: data.booking.date, time: data.booking.time, durationHours: data.booking.durationHours },
       ...current,
     ]);
     setStatus("success");
@@ -388,7 +390,7 @@ export default function BookingEmbed() {
       ),
     );
     setOccupiedSlots((current) => [
-      { id: data.booking.id, date: data.booking.date, time: data.booking.time },
+      { id: data.booking.id, date: data.booking.date, time: data.booking.time, durationHours: data.booking.durationHours },
       ...current.filter((slot) => slot.id !== data.booking.id),
     ]);
     setReschedulingBookingId(null);
@@ -472,8 +474,9 @@ export default function BookingEmbed() {
     occupiedSlots.some(
       (slot) =>
         slot.id !== reschedulingBookingId &&
-        slot.date === selectedDate &&
-        slot.time === time,
+        bookingsOverlap({ ...slot, durationHours: slot.durationHours ?? 1 }, {
+          date: selectedDate, time, durationHours: selectedRule.durationHours,
+        }),
     );
 
   return (
