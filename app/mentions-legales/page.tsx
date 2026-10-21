@@ -1,13 +1,9 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/metadata";
 
 import LegalDocument from "@/components/LegalDocument";
 import { siteConfig } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Mentions légales",
-  description: "Informations légales relatives au site DojoMath.",
-  alternates: { canonical: "/mentions-legales" },
-};
+export const metadata = pageMetadata("Mentions légales", "Informations légales relatives au site DojoMath.", "/mentions-legales");
 
 export default function MentionsLegalesPage() {
   return (

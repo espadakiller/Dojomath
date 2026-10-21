@@ -5,6 +5,9 @@ const isProduction = process.env.NODE_ENV === "production";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  images: {
+    qualities: [65, 72, 75],
+  },
   outputFileTracingRoot: projectRoot,
   turbopack: {
     root: projectRoot,

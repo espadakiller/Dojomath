@@ -13,7 +13,6 @@ export const metadata: Metadata = {
     template: "%s | DojoMath",
   },
   description: siteConfig.description,
-  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: siteConfig.locale,
@@ -62,7 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   };
 
   return (
-    <html lang="fr" className={GeistSans.variable}>
+    <html lang="fr" className={GeistSans.variable} data-scroll-behavior="smooth">
       <body className={GeistSans.className}>
         <script
           type="application/ld+json"

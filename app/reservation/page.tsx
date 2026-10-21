@@ -1,15 +1,11 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/metadata";
 import Link from "next/link";
 import { CalendarDays, CreditCard, ShieldCheck, UserRound } from "lucide-react";
 
 import BookingEmbed from "@/components/BookingEmbed";
 import SectionTitle from "@/components/SectionTitle";
 
-export const metadata: Metadata = {
-  title: "Réserver un cours de maths en ligne",
-  description: "Consultez les disponibilités, choisissez une formule et réservez votre cours individuel de mathématiques en visio.",
-  alternates: { canonical: "/reservation" },
-};
+export const metadata = pageMetadata("Réserver un cours de maths en ligne", "Consultez les disponibilités, choisissez une formule et réservez votre cours individuel de mathématiques en visio.", "/reservation");
 
 const steps = [
   { icon: CalendarDays, title: "Choisir", text: "Sélectionnez la formule et consultez les créneaux disponibles." },

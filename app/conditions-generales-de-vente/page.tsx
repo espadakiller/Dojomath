@@ -1,13 +1,9 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/metadata";
 import Link from "next/link";
 
 import LegalDocument from "@/components/LegalDocument";
 
-export const metadata: Metadata = {
-  title: "Conditions générales de vente",
-  description: "Conditions applicables aux cours particuliers DojoMath.",
-  alternates: { canonical: "/conditions-generales-de-vente" },
-};
+export const metadata = pageMetadata("Conditions générales de vente", "Conditions applicables aux cours particuliers DojoMath.", "/conditions-generales-de-vente");
 
 export default function CgvPage() {
   return (

@@ -1,15 +1,11 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/metadata";
 import Link from "next/link";
 import { ArrowRight, BookOpenCheck, Calculator, GraduationCap, RefreshCcw, Target } from "lucide-react";
 
 import CourseCard from "@/components/CourseCard";
 import SectionTitle from "@/components/SectionTitle";
 
-export const metadata: Metadata = {
-  title: "Cours de mathématiques en ligne",
-  description: "Découvrez les cours individuels DojoMath pour le collège, le lycée, le brevet, le bac et la remise à niveau.",
-  alternates: { canonical: "/cours" },
-};
+export const metadata = pageMetadata("Cours de mathématiques en ligne", "Découvrez les cours individuels DojoMath pour le collège, le lycée, le brevet, le bac et la remise à niveau.", "/cours");
 
 const offers = [
   { href: "/cours-maths-college-en-ligne", icon: Calculator, title: "Collège", description: "6e à 3e : calcul, fractions, équations, fonctions, géométrie et brevet." },

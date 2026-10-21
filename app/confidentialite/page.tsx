@@ -1,13 +1,9 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/metadata";
 import Link from "next/link";
 
 import LegalDocument from "@/components/LegalDocument";
 
-export const metadata: Metadata = {
-  title: "Politique de confidentialité",
-  description: "Gestion des données personnelles sur DojoMath.",
-  alternates: { canonical: "/confidentialite" },
-};
+export const metadata = pageMetadata("Politique de confidentialité", "Gestion des données personnelles sur DojoMath.", "/confidentialite");
 
 export default function ConfidentialitePage() {
   return (

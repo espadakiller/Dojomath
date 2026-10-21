@@ -5,6 +5,7 @@ import Logo from "@/components/Logo";
 const mainLinks = [
   { href: "/cours", label: "Cours" },
   { href: "/tarifs", label: "Tarifs" },
+  { href: "/ressources", label: "Exercices corrigés gratuits" },
   { href: "/reservation", label: "Réservation" },
   { href: "/contact", label: "Contact" },
 ];
@@ -40,6 +41,8 @@ export default function Footer() {
                 {link.label}
               </Link>
             ))}
+            <Link href="/cours-maths-college-en-ligne" className="hover:text-[#6f1022]">Cours de maths au collège</Link>
+            <Link href="/cours-maths-lycee-en-ligne" className="hover:text-[#6f1022]">Cours de maths au lycée</Link>
           </div>
         </div>
 

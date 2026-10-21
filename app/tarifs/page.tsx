@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/metadata";
 import Link from "next/link";
 import { Check, ShieldCheck, X } from "lucide-react";
 
@@ -6,11 +6,7 @@ import PricingCard from "@/components/PricingCard";
 import SectionTitle from "@/components/SectionTitle";
 import { comparisonRows, pricingPlans, type PlanId } from "@/lib/pricing";
 
-export const metadata: Metadata = {
-  title: "Tarifs des cours de maths en ligne",
-  description: "Cours individuel à 30 €/h, suivi mensuel ou stage vacances. Comparez clairement les formules DojoMath.",
-  alternates: { canonical: "/tarifs" },
-};
+export const metadata = pageMetadata("Tarifs des cours de maths en ligne", "Cours individuel à 30 €/h, suivi mensuel ou stage vacances. Comparez clairement les formules DojoMath.", "/tarifs");
 
 const planOrder: PlanId[] = ["liberte", "progression", "stage"];
 

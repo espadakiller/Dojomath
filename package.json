@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test:security": "node scripts/test-security.mjs",
-    "test:email": "node scripts/test-email.mjs"
+    "test:email": "node scripts/test-email.mjs",
+    "test:seo": "node scripts/test-seo.mjs"
   },
   "dependencies": {
     "framer-motion": "^12.38.0",

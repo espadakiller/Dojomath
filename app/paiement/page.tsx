@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle2, CalendarDays } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Retour de paiement",
+  robots: { index: false, follow: false },
+};
 
 export default function PaiementPage() {
   return (

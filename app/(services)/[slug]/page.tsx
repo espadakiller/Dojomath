@@ -5,6 +5,8 @@ import { ArrowRight, CheckCircle2, ClipboardCheck, Video } from "lucide-react";
 
 import { getService, services } from "@/lib/services";
 import { absoluteUrl } from "@/lib/site";
+import { pageMetadata } from "@/lib/metadata";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -16,12 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const service = getService((await params).slug);
   if (!service) return {};
 
-  return {
-    title: service.title,
-    description: service.description,
-    alternates: { canonical: `/${service.slug}` },
-    openGraph: { title: service.title, description: service.description, url: `/${service.slug}` },
-  };
+  return pageMetadata(service.title, service.description, `/${service.slug}`);
 }
 
 export default async function ServicePage({ params }: Props) {
@@ -55,6 +52,7 @@ export default async function ServicePage({ params }: Props) {
     <main className="px-5 pb-24 pt-36">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <div className="mx-auto max-w-6xl">
+        <Breadcrumbs items={[{ label: "Cours", href: "/cours" }, { label: service.eyebrow, href: `/${service.slug}` }]} />
         <header className="mx-auto max-w-4xl text-center">
           <p className="eyebrow text-[#6f1022]">{service.eyebrow}</p>
           <h1 className="mt-5 text-5xl font-semibold leading-[1.02] tracking-[-0.05em] text-[#171313] md:text-7xl">

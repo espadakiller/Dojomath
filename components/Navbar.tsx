@@ -11,7 +11,7 @@ const links = [
   { href: "/", label: "Accueil" },
   { href: "/cours", label: "Cours" },
   { href: "/tarifs", label: "Tarifs" },
-  { href: "/reservation", label: "Réservation" },
+  { href: "/ressources", label: "Ressources" },
   { href: "/contact", label: "Contact" },
 ];
 

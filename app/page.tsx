@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/metadata";
 import Image from "next/image";
 import Link from "next/link";
 import { BookOpenCheck, Brain, CheckCircle2, GraduationCap, ShieldCheck, Target, Video } from "lucide-react";
@@ -13,11 +13,11 @@ import SectionTitle from "@/components/SectionTitle";
 import StatsStrip from "@/components/StatsStrip";
 import { pricingPlans } from "@/lib/pricing";
 
-export const metadata: Metadata = {
-  title: "Cours particuliers de maths en ligne",
-  description: "Cours individuels de mathématiques en visio, du collège au supérieur, avec un enseignant certifié. Tarifs transparents dès 30 € par heure.",
-  alternates: { canonical: "/" },
-};
+export const metadata = pageMetadata(
+  "Cours particuliers de maths en ligne",
+  "Cours individuels de mathématiques en visio, du collège au supérieur, avec un enseignant certifié. Tarifs transparents dès 30 € par heure.",
+  "/",
+);
 
 const sessionSteps = [
   { title: "Comprendre le besoin", text: "Niveau, chapitre, contrôle ou examen : l’objectif est précisé avant la séance." },
@@ -71,7 +71,7 @@ export default function HomePage() {
             <CourseCard href="/preparation-brevet-maths" icon={Target} title="Préparation brevet" description="Révisions ciblées, annales, gestion du temps et rédaction." />
             <CourseCard href="/preparation-bac-maths" icon={BookOpenCheck} title="Préparation bac" description="Automatismes, méthodes et entraînement sur des sujets types." />
             <CourseCard href="/remise-a-niveau-maths" icon={CheckCircle2} title="Remise à niveau" description="Un parcours progressif pour reconstruire les prérequis utiles." />
-            <CourseCard href="/ressources/equations-premier-degre" icon={Video} title="Ressource gratuite" description="Une vraie fiche méthode avec exemple et exercices corrigés." />
+            <CourseCard href="/ressources" icon={Video} title="Exercices corrigés gratuits" description="Équations, fractions : fiches méthode, exemples guidés et exercices corrigés." />
           </div>
         </div>
       </section>

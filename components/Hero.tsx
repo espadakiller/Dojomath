@@ -65,35 +65,35 @@ export default function Hero() {
         <div className="mx-auto flex w-full max-w-[38rem] flex-col items-start lg:mx-0">
           <motion.p
             className="inline-flex min-h-11 items-center rounded-full border border-[#b88a3b]/35 bg-[#fffaf3]/90 px-5 text-sm font-semibold uppercase tracking-[0.14em] text-[#6f1022] shadow-sm"
-            initial={{ opacity: 0, y: 16 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
           >
             Mathématiques · Collège · Lycée · Supérieur
           </motion.p>
 
           <motion.h1
-            className="mt-7 max-w-[38rem] text-5xl font-semibold leading-[0.98] tracking-[-0.045em] text-[#171313] sm:text-6xl lg:text-7xl"
-            initial={{ opacity: 0, y: 22 }}
+            className="mt-6 max-w-[38rem] text-4xl font-semibold leading-[1.08] text-[#171313] sm:text-5xl lg:text-6xl"
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08 }}
           >
-            Des cours de maths clairs, en visio et à votre rythme.
+            Cours particuliers de maths en ligne
           </motion.h1>
 
           <motion.p
             className="mt-6 max-w-2xl text-lg leading-8 text-[#554c47]"
-            initial={{ opacity: 0, y: 18 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.16 }}
           >
-            Un accompagnement individuel assuré par un enseignant certifié :
-            explications simples, exercices ciblés et bilan clair après la
-            séance. La première heure est proposée à 30 €, sans engagement.
+            Un enseignant certifié pour comprendre, retrouver une méthode et
+            préparer les contrôles. Première séance : 30 € pour une heure,
+            sans engagement.
           </motion.p>
 
           <motion.ul
             className="mt-7 grid gap-3 text-sm font-semibold text-[#4a3c36] sm:grid-cols-2"
-            initial={{ opacity: 0, y: 16 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.22 }}
           >
@@ -107,7 +107,7 @@ export default function Hero() {
 
           <motion.div
             className="mt-9 flex w-full max-w-[34rem] flex-col gap-4 sm:flex-row"
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.28 }}
           >
@@ -129,7 +129,7 @@ export default function Hero() {
 
         <motion.div
           className="relative mx-auto min-h-[560px] w-full max-w-[42rem] sm:min-h-[610px]"
-          initial={{ opacity: 0, scale: 0.98, y: 20 }}
+          initial={false}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ delay: 0.24, duration: 0.65 }}
         >

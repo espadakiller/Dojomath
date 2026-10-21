@@ -1,14 +1,10 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/metadata";
 import Link from "next/link";
 import { Clock3, MessageCircle, ShieldCheck } from "lucide-react";
 
 import ContactForm from "@/components/ContactForm";
 
-export const metadata: Metadata = {
-  title: "Contact",
-  description: "Posez une question sur les cours, les niveaux, les disponibilités ou les formules DojoMath.",
-  alternates: { canonical: "/contact" },
-};
+export const metadata = pageMetadata("Contacter un professeur de maths en ligne", "Posez une question sur les cours, les niveaux, les disponibilités ou les formules DojoMath.", "/contact");
 
 const reassurance = [
   { icon: Clock3, title: "Réponse personnelle", text: "La demande est lue par la personne qui assure les cours." },

@@ -1,17 +1,15 @@
-import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/metadata";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Résoudre une équation du premier degré — fiche méthode",
-  description: "Une fiche méthode gratuite avec exemple et exercices corrigés pour résoudre une équation du premier degré.",
-  alternates: { canonical: "/ressources/equations-premier-degre" },
-};
+export const metadata = pageMetadata("Résoudre une équation du premier degré - fiche méthode", "Une fiche méthode gratuite avec exemple et exercices corrigés pour résoudre une équation du premier degré.", "/ressources/equations-premier-degre");
 
 export default function EquationResourcePage() {
   return (
     <main className="px-5 pb-24 pt-36">
       <article className="mx-auto max-w-4xl">
+        <Breadcrumbs items={[{ label: "Ressources", href: "/ressources" }, { label: "Équations du premier degré", href: "/ressources/equations-premier-degre" }]} />
         <header className="rounded-[2rem] border border-[#b88a3b]/25 bg-[#fffaf3] p-7 shadow-xl shadow-[#6f1022]/8 md:p-12">
           <p className="eyebrow text-[#6f1022]">Fiche méthode gratuite · Collège</p>
           <h1 className="mt-4 text-5xl font-semibold leading-[1.02] tracking-[-0.05em] md:text-7xl">Résoudre une équation du premier degré</h1>
@@ -49,6 +47,10 @@ export default function EquationResourcePage() {
           </details>
         </section>
 
+        <aside className="mt-8 flex flex-wrap gap-5 text-sm font-semibold text-[#6f1022]" aria-label="Pour continuer">
+          <Link href="/ressources/calcul-fractions" className="underline underline-offset-4">Revoir le calcul des fractions</Link>
+          <Link href="/cours-maths-college-en-ligne" className="underline underline-offset-4">Découvrir les cours au collège</Link>
+        </aside>
         <section className="mt-8 rounded-[2rem] bg-[#6f1022] p-8 text-center text-[#fffaf3] md:p-10">
           <h2 className="text-3xl font-semibold tracking-[-0.04em]">Une étape reste floue ?</h2>
           <p className="mx-auto mt-3 max-w-2xl leading-7 text-[#fffaf3]/80">Une séance individuelle permet de reprendre précisément les erreurs et d’avancer sur les exercices de ton cours.</p>
