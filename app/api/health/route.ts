@@ -61,7 +61,7 @@ export async function GET(request: Request) {
   const configuredContactTo =
     process.env.CONTACT_TO_EMAIL ??
     process.env.TEACHER_EMAIL ??
-    "mkkurban9@gmail.com";
+    "dojomath.contact@gmail.com";
   const ok = supabase.configured && supabase.urlLooksValid && supabase.reachable;
   const responseOptions = {
     status: ok ? 200 : 503,

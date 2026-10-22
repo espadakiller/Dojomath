@@ -5,7 +5,7 @@ export const siteConfig = {
   description:
     "Cours particuliers de mathématiques en visio, du collège au supérieur, avec un enseignant certifié.",
   contactEmail:
-    process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "contact@domaths.fr",
+    process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "dojomath.contact@gmail.com",
   legalName: process.env.NEXT_PUBLIC_LEGAL_NAME ?? "DojoMath",
   legalStatus:
     process.env.NEXT_PUBLIC_LEGAL_STATUS ??

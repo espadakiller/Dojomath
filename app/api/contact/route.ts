@@ -12,7 +12,7 @@ import {
 const recipient =
   process.env.CONTACT_TO_EMAIL ??
   process.env.TEACHER_EMAIL ??
-  "mkkurban9@gmail.com";
+  "dojomath.contact@gmail.com";
 const subject = "DOJOMATH CONTACTS";
 
 type ContactPayload = {

@@ -19,7 +19,7 @@ const emailFrom = process.env.EMAIL_FROM;
 const teacherEmail =
   process.env.TEACHER_EMAIL ??
   process.env.CONTACT_TO_EMAIL ??
-  "mkkurban9@gmail.com";
+  "dojomath.contact@gmail.com";
 
 function escapeHtml(value: string) {
   return value
@@ -67,7 +67,7 @@ async function sendEmail(payload: EmailPayload) {
       subject: payload.subject,
       html: payload.html,
       text: payload.text,
-      ...(payload.replyTo ? { reply_to: payload.replyTo } : {}),
+      reply_to: payload.replyTo ?? teacherEmail,
     }),
   });
 
@@ -127,6 +127,7 @@ export function sendWelcomeEmail(account: PublicAccount) {
 export function sendTeacherSignupEmail(account: PublicAccount) {
   return safelySendEmail({
     to: teacherEmail,
+    replyTo: account.email,
     subject: "Nouvelle inscription - DojoMath",
     idempotencyKey: `teacher-signup-${account.id}`,
     text: [
@@ -153,7 +154,7 @@ export function sendContactEmail(details: {
   const recipient =
     process.env.CONTACT_TO_EMAIL ??
     process.env.TEACHER_EMAIL ??
-    "mkkurban9@gmail.com";
+    "dojomath.contact@gmail.com";
   const sender = process.env.CONTACT_FROM_EMAIL ?? emailFrom;
   const safeMessage = escapeHtml(details.message).replace(/\n/g, "<br />");
 
@@ -239,6 +240,7 @@ export function sendTeacherBookingEmail(
   return safelySendEmail({
     to: teacherEmail,
     subject: `Nouvelle reservation DojoMath - ${dateLabel} ${booking.time}`,
+    replyTo: account.email,
     idempotencyKey: `teacher-booking-${booking.id}`,
     text: [
       "Nouvelle reservation DojoMath",
@@ -317,6 +319,7 @@ export function sendBookingChangeRequestEmail(
       request.type === "cancel"
         ? `Demande d'annulation - ${dateLabel} ${booking.time}`
         : `Demande de deplacement - ${dateLabel} ${booking.time}`,
+    replyTo: account.email,
     idempotencyKey: `booking-change-${booking.id}-${request.createdAt}`,
     text: [
       request.type === "cancel"

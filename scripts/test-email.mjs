@@ -35,9 +35,11 @@ const email = load("lib/email.ts");
 const account = { id: "test-signup", firstName: "<Test>", lastName: "Parent", email: "parent@example.invalid", tokens: 0 };
 assert.equal((await email.sendWelcomeEmail(account)).ok, true);
 assert.equal(sent.at(-1).to[0], account.email);
+assert.equal(sent.at(-1).reply_to, env.TEACHER_EMAIL);
 assert.ok(sent.at(-1).html.includes("&lt;Test&gt;"));
 assert.equal((await email.sendTeacherSignupEmail(account)).ok, true);
 assert.equal(sent.at(-1).to[0], env.TEACHER_EMAIL);
+assert.equal(sent.at(-1).reply_to, account.email);
 assert.equal(sent.at(-1).key, "teacher-signup-test-signup");
 assert.ok(sent.at(-1).text.includes("ni un paiement ni une reservation"));
 assert.equal((await email.sendContactEmail({ name: "<Test>", email: account.email, message: "<script>test</script>" })).ok, true);
@@ -48,6 +50,20 @@ assert.ok(!sent.at(-1).html.includes("<script>"));
 failDelivery = true;
 assert.equal((await email.sendTeacherSignupEmail(account)).ok, false);
 failDelivery = false;
+
+const savedTeacher = env.TEACHER_EMAIL;
+const savedContact = env.CONTACT_TO_EMAIL;
+delete env.TEACHER_EMAIL;
+delete env.CONTACT_TO_EMAIL;
+const defaultEmail = load("lib/email.ts");
+await defaultEmail.sendTeacherSignupEmail(account);
+assert.equal(sent.at(-1).to[0], "dojomath.contact@gmail.com");
+await defaultEmail.sendContactEmail({ name: "Test", email: account.email, message: "Test officiel" });
+assert.equal(sent.at(-1).to[0], "dojomath.contact@gmail.com");
+await defaultEmail.sendWelcomeEmail(account);
+assert.equal(sent.at(-1).reply_to, "dojomath.contact@gmail.com");
+env.TEACHER_EMAIL = savedTeacher;
+env.CONTACT_TO_EMAIL = savedContact;
 
 // Exercise the signup handler without creating accounts or sending real emails.
 let existing = false;
