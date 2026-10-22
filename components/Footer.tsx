@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import Logo from "@/components/Logo";
+import { siteConfig } from "@/lib/site";
 
 const mainLinks = [
   { href: "/cours", label: "Cours" },
@@ -29,6 +30,7 @@ export default function Footer() {
           <p className="mt-3 text-sm font-semibold text-[#6f1022]">
             Paiement traité par Stripe · Réservation sécurisée
           </p>
+          <a href={`mailto:${siteConfig.contactEmail}`} className="mt-3 inline-block max-w-full break-all text-sm font-semibold text-[#6f1022] underline underline-offset-4">{siteConfig.contactEmail}</a>
         </div>
 
         <div>

@@ -2,6 +2,7 @@ import { pageMetadata } from "@/lib/metadata";
 import Link from "next/link";
 
 import LegalDocument from "@/components/LegalDocument";
+import { siteConfig } from "@/lib/site";
 
 export const metadata = pageMetadata("Conditions générales de vente", "Conditions applicables aux cours particuliers DojoMath.", "/conditions-generales-de-vente");
 
@@ -42,7 +43,7 @@ export default function CgvPage() {
       </section>
       <section>
         <h2>9. Réclamation</h2>
-        <p>Toute réclamation peut être adressée via le formulaire de contact. Une réponse amiable sera recherchée en priorité. Les coordonnées du médiateur de la consommation compétent sont communiquées au consommateur avec les documents contractuels applicables.</p>
+        <p>Toute réclamation peut être adressée à <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a> ou via le formulaire de contact. Une réponse amiable sera recherchée en priorité. Les coordonnées du médiateur de la consommation compétent sont communiquées au consommateur avec les documents contractuels applicables.</p>
       </section>
     </LegalDocument>
   );

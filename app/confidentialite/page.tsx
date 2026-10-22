@@ -2,6 +2,7 @@ import { pageMetadata } from "@/lib/metadata";
 import Link from "next/link";
 
 import LegalDocument from "@/components/LegalDocument";
+import { siteConfig } from "@/lib/site";
 
 export const metadata = pageMetadata("Politique de confidentialité", "Gestion des données personnelles sur DojoMath.", "/confidentialite");
 
@@ -35,7 +36,7 @@ export default function ConfidentialitePage() {
       </section>
       <section>
         <h2>Vos droits</h2>
-        <p>Vous pouvez demander l’accès, la rectification, l’effacement, la limitation ou, lorsque les conditions sont réunies, la portabilité de vos données. Utilisez le <Link href="/contact">formulaire de contact</Link> en précisant « Données personnelles » dans votre message. Vous pouvez également introduire une réclamation auprès de la CNIL.</p>
+        <p>Vous pouvez demander l’accès, la rectification, l’effacement, la limitation ou, lorsque les conditions sont réunies, la portabilité de vos données. Écrivez à <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a> ou utilisez le <Link href="/contact">formulaire de contact</Link> en précisant « Données personnelles » dans votre message. Vous pouvez également introduire une réclamation auprès de la CNIL.</p>
       </section>
       <section>
         <h2>Cookies</h2>

@@ -14,7 +14,7 @@ export default function MentionsLegalesPage() {
         <p>{siteConfig.legalStatus}</p>
         {siteConfig.legalRegistration && <p>Immatriculation : {siteConfig.legalRegistration}</p>}
         {siteConfig.legalAddress && <p>Adresse professionnelle : {siteConfig.legalAddress}</p>}
-        <p>Contact : formulaire disponible sur la page Contact.</p>
+        <p>Contact : <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>, ou via le formulaire disponible sur la page Contact.</p>
       </section>
       <section>
         <h2>Responsable de la publication</h2>

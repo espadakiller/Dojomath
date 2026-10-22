@@ -1,8 +1,9 @@
 import { pageMetadata } from "@/lib/metadata";
 import Link from "next/link";
-import { Clock3, MessageCircle, ShieldCheck } from "lucide-react";
+import { Clock3, Mail, MessageCircle, ShieldCheck } from "lucide-react";
 
 import ContactForm from "@/components/ContactForm";
+import { siteConfig } from "@/lib/site";
 
 export const metadata = pageMetadata("Contacter un professeur de maths en ligne", "Posez une question sur les cours, les niveaux, les disponibilités ou les formules DojoMath.", "/contact");
 
@@ -20,6 +21,7 @@ export default function ContactPage() {
           <p className="eyebrow text-[#6f1022]">Contact</p>
           <h1 className="mt-4 max-w-xl text-4xl font-semibold tracking-[-0.05em] text-[#171313] sm:text-5xl md:text-6xl">Parlons du besoin avant de réserver</h1>
           <p className="mt-6 max-w-xl text-lg leading-8 text-[#645c58]">Indiquez simplement le niveau, le chapitre ou l’échéance. Vous recevrez une réponse adaptée, sans obligation d’achat.</p>
+          <a href={`mailto:${siteConfig.contactEmail}`} className="mt-5 inline-flex max-w-full items-center gap-2 font-semibold text-[#6f1022] underline underline-offset-4"><Mail size={18} className="shrink-0" aria-hidden="true" /><span className="break-all">{siteConfig.contactEmail}</span></a>
           <div className="mt-8 grid gap-4">
             {reassurance.map((item) => <div key={item.title} className="flex items-start gap-4"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#6f1022] text-white"><item.icon size={20} /></span><div><h2 className="text-base font-semibold">{item.title}</h2><p className="mt-1 text-sm leading-6 text-[#645c58]">{item.text}</p></div></div>)}
           </div>
